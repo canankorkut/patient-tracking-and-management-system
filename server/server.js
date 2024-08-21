@@ -1,5 +1,10 @@
-const express = require('express')
+const express = require("express")
+const cors = require("cors")
+const pool = require("./database")
 const app = express()
+
+app.use(express.json())
+app.use(cors())
 
 app.get("/", (reg, res) => {
     res.send("Hello world!")
