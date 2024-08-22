@@ -21,8 +21,6 @@ const runQuery = async () => {
         console.log('Current time:', res.rows[0])
     } catch (err) {
         console.error('Query error:', err)
-    } finally {
-        await pool.end()
     }
 }
 
