@@ -5,6 +5,29 @@ const pool = require('./database');
 // Random data insertion functions
 async function seedData() {
     try {
+        // To track similar email addresses, create a Set
+        const emailSet = new Set();
+
+        // Add 5000 users 
+        for (let i = 0; i < 5000; i++) {
+            let email;
+            do {
+                email = faker.internet.email();
+            } while (emailSet.has(email));
+
+            emailSet.add(email);
+            const password = faker.internet.password();
+            const role = faker.helpers.arrayElement(['patient', 'doctor', 'admin']);
+
+            await pool.query(
+                'INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING user_id',
+                [email, password, role]
+            );
+        }
+
+        // To track used user IDs, create a Set.
+        const usedUserIds = new Set();
+
         // Add 1000 doctors
         for(let i = 0; i < 1000; i++) {
             const firstName = faker.person.firstName();
@@ -14,10 +37,18 @@ async function seedData() {
                 'Cardiovascular Surgery', 'Obstetrics and Gynecology', 'Otolaryngology', 'Ophthalmology', 'Neurology', 'Radiology', 'Psychiatry', 'Dermatology', 'Cardiology', 'Urology'
             ]);
             const hospitalAffiliation = faker.company.name();
+            
+            let userId;
+            do {
+                const userIdResult = await pool.query('SELECT user_id FROM users WHERE role = $1 ORDER BY RANDOM() LIMIT 1', ['doctor']);
+                userId = userIdResult.rows[0].user_id;
+            } while (usedUserIds.has(userId));
+
+            usedUserIds.add(userId);
 
             await pool.query(
-                'INSERT INTO doctors (first_name, last_name, specialization, hospital_affiliation) VALUES ($1, $2, $3, $4)',
-                [firstName, lastName, specialization, hospitalAffiliation]
+                'INSERT INTO doctors (user_id, first_name, last_name, specialization, hospital_affiliation) VALUES ($1, $2, $3, $4, $5)',
+                [userId, firstName, lastName, specialization, hospitalAffiliation]
             );
         }
 
@@ -29,10 +60,18 @@ async function seedData() {
             const gender = faker.helpers.arrayElement(['Male', 'Female']);
             const phoneNumber = faker.phone.number();
             const address = faker.location.streetAddress();
+            
+            let userId;
+            do {
+                const userIdResult = await pool.query('SELECT user_id FROM users WHERE role = $1 ORDER BY RANDOM() LIMIT 1', ['patient']);
+                userId = userIdResult.rows[0].user_id;
+            } while (usedUserIds.has(userId));
+
+            usedUserIds.add(userId);
 
             await pool.query(
-                'INSERT INTO patients (first_name, last_name, date_of_birth, gender, phone_number, address) VALUES ($1, $2, $3, $4, $5, $6)',
-                [firstName, lastName, dateOfBirth, gender, phoneNumber, address]
+                'INSERT INTO patients (user_id, first_name, last_name, date_of_birth, gender, phone_number, address) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+                [userId, firstName, lastName, dateOfBirth, gender, phoneNumber, address]
             );
         }
 
@@ -40,10 +79,18 @@ async function seedData() {
         for (let i = 0; i < 10; i++) {
             const firstName = faker.person.firstName();
             const lastName = faker.person.lastName();
+            
+            let userId;
+            do {
+                const userIdResult = await pool.query('SELECT user_id FROM users WHERE role = $1 ORDER BY RANDOM() LIMIT 1', ['admin']);
+                userId = userIdResult.rows[0].user_id;
+            } while (usedUserIds.has(userId));
+
+            usedUserIds.add(userId);
 
             await pool.query(
-                'INSERT INTO admin (first_name, last_name) VALUES ($1, $2)',
-                [firstName, lastName]
+                'INSERT INTO admin (user_id, first_name, last_name) VALUES ($1, $2, $3)',
+                [userId, firstName, lastName]
             );
         }
 

@@ -1,5 +1,13 @@
+CREATE TABLE IF NOT EXISTS users (
+    user_id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'patient', 'doctor'))
+);
+
 CREATE TABLE IF NOT EXISTS patients (
     patient_id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     date_of_birth DATE NOT NULL,
@@ -10,6 +18,7 @@ CREATE TABLE IF NOT EXISTS patients (
 
 CREATE TABLE IF NOT EXISTS doctors (
     doctor_id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     specialization VARCHAR(100) NOT NULL,
@@ -18,6 +27,7 @@ CREATE TABLE IF NOT EXISTS doctors (
 
 CREATE TABLE IF NOT EXISTS admin (
     admin_id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL
 );
