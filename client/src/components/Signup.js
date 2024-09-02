@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import axios from 'axios'
+import '../styles/auth.css'
 
-function Signup() {
+function Signup(props) {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [role, setRole] = useState("patient")
 
-    const handleSignup = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         try {
             await axios.post('http://localhost:5000/api/auth/signup', { email, password, role })
@@ -16,29 +17,33 @@ function Signup() {
         }
     }
   return (
-    <div>
-        <h2>Signup</h2>
-        <form onSubmit={handleSignup}>
-            <input 
-                type='email'
-                placeholder='Email'
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-            />
-            <input 
-                type='password'
-                placeholder='Password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-            />
-            <select value={role} onChange={(e) => setRole(e.target.value)}>
-                <option value='patient'>Patient</option>
-                <option value='doctor'>Doctor</option>
-            </select>
-            <button type='submit'>Signup</button>
-        </form>
+    <div className='auth-container'>
+        <div className='image-container'></div>
+        <div className='auth-form-wrapper'>
+            <form className='register-form' onSubmit={handleSubmit}>
+                <h2>Signup</h2>
+                <input 
+                    type='email'
+                    placeholder='Email'
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
+                <input 
+                    type='password'
+                    placeholder='Password'
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+                <select value={role} onChange={(e) => setRole(e.target.value)}>
+                    <option value='patient'>Patient</option>
+                    <option value='doctor'>Doctor</option>
+                </select>
+                <button type='submit'>Signup</button>
+                <button className='link-btn' onClick={() => props.onFormSwitch('login')}>Already have an account? Login here.</button>
+            </form>
+        </div> 
     </div>
   )
 }

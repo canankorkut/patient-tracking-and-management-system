@@ -1,11 +1,12 @@
 import React, { useState} from 'react'
 import axios from 'axios'
+import '../styles/auth.css'
 
-function Login() {
+function Login(props) {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
 
-    const handleLogin = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const res = await axios.post('http://localhost:5000/api/auth/login', { email, password })
@@ -19,25 +20,29 @@ function Login() {
     };
 
   return (
-    <div>
-        <h2>Login</h2>
-        <form onSubmit={handleLogin}>
-            <input 
-                type='email'
-                placeholder='Email'
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-            />
-            <input 
-                type='password'
-                placeholder='Password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-            />
-            <button type='submit'>Login</button>
-        </form>
+    <div className='auth-container'>
+        <div className='image-container'></div>
+        <div className='auth-form-wrapper'>
+            <form className='login-form' onSubmit={handleSubmit}>
+                <h2>Login</h2>
+                <input 
+                    type='email'
+                    placeholder='Email'
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
+                <input 
+                    type='password'
+                    placeholder='Password'
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+                <button type='submit'>Login</button>
+                <button className='link-btn' onClick={() => props.onFormSwitch('signup')}>Don't have an account? Register here.</button>
+            </form>
+        </div>    
     </div>
   )
 }

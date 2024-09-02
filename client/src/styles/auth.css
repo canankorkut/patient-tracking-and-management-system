@@ -1,0 +1,72 @@
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #fff;
+}
+
+.image-container {
+    flex: 1;
+    background-image: url('../assets/background.jpg'); 
+    background-size: cover;
+    background-position: center;
+    height: 100%;
+    margin-left: 20px;
+}
+
+.auth-form-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-form, .register-form {
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 28px;
+    color: #333;
+}
+
+input[type='email'], input[type='password'], select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px; 
+    border: 1px solid #888;
+    border-radius: 5px;
+    font-size: 16px; 
+    box-sizing: border-box;
+}
+
+input[type='email']:focus, input[type='password']:focus, select:focus {
+    border-color: #007bff;
+    outline: none; 
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 20px; 
+}
+
+.link-btn {
+    background: none;
+    color: #007bff;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 14px; 
+}
+
