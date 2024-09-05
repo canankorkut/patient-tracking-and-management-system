@@ -1,17 +1,20 @@
-import React, { useState } from 'react'
+import React, {useState} from 'react'
 import axios from 'axios'
-import '../styles/auth.css'
+import '../styles/Auth.css'
+import { useNavigate } from 'react-router-dom'
 
-function Signup(props) {
+function Signup() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [role, setRole] = useState("patient")
+    const navigate = useNavigate()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
             await axios.post('http://localhost:5000/api/auth/signup', { email, password, role })
             alert('Successfully registered!')
+            navigate('/login')
         } catch (err) {
             alert('Registration failed: ', err.response.data)
         }
@@ -39,9 +42,10 @@ function Signup(props) {
                 <select value={role} onChange={(e) => setRole(e.target.value)}>
                     <option value='patient'>Patient</option>
                     <option value='doctor'>Doctor</option>
+                    <option value='doctor'>Admin</option>
                 </select>
                 <button type='submit'>Signup</button>
-                <button className='link-btn' onClick={() => props.onFormSwitch('login')}>Already have an account? Login here.</button>
+                <button className='link-btn' onClick={() => navigate('/login')}>Already have an account? Login here.</button>
             </form>
         </div> 
     </div>
