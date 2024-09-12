@@ -3,7 +3,6 @@ const router = express.Router();
 const pool = require('../database');
 const authenticateToken = require('../middlewares/authenticateToken');
 
-// Hastanın bilgilerini al
 router.get('/:id', authenticateToken, async(req, res) => {
     const { id } = req.params;
     const { user } = req;

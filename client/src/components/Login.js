@@ -9,28 +9,34 @@ function Login() {
     const navigate = useNavigate()
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        e.preventDefault()
         try {
             const res = await axios.post('http://localhost:5000/api/auth/login', { email, password })
-            if (res && res.data) {  
-                localStorage.setItem('token', res.data.token);
+            if (res && res.data) {
+                localStorage.setItem('token', res.data.token)
+    
                 const userRes = await axios.get('/api/users/user', {
                     headers: { Authorization: `Bearer ${res.data.token}` }
-                });
-                const { role } = userRes.data;
+                })
+                
+                const { role, roleDetails } = userRes.data
+    
                 if (role === 'patient') {
-                    navigate('/patient');
-                } else if (role === 'doctor') {
-                    navigate('/doctor');
-                } else if (role === 'admin') {
-                    navigate('/admin');
+                    if (roleDetails && roleDetails.patient_id) {
+                        localStorage.setItem('patient_id', roleDetails.patient_id)
+                        navigate('/patient')
+                    } else {
+                        alert('Patient ID not found')
+                    }
                 } else {
-                    alert('Role not recognized');
+                    alert('Role not recognized')
                 }
             }
         } catch (err) {
-            alert('Login failed: ' + err.response.data);
+            const errorMessage = err.response && err.response.data ? err.response.data : 'An error occurred'
+            alert('Login failed: ' + errorMessage)
         }
+    
     };
 
   return (
@@ -53,8 +59,10 @@ function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
-                <button type='submit'>Login</button>
-                <button className='link-btn' onClick={() => navigate('/signup')}>Don't have an account? Register here.</button>
+                <button type='submit' className='login-button'>Login</button>
+                <div className='link-container'>
+                    <button type='button' className='link-btn' onClick={() => navigate('/signup')}>Don't have an account? Register here.</button>
+                </div>
             </form>
         </div>    
     </div>

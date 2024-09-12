@@ -42,7 +42,11 @@
     color: #333;
 }
 
-input[type='email'], input[type='password'], select {
+input[type='email'], 
+input[type='password'], 
+input[type='text'],
+input[type='date'],
+select {
     width: 100%;
     padding: 12px;
     margin-bottom: 20px; 
@@ -61,7 +65,21 @@ input[type='email']:focus, input[type='password']:focus, select:focus {
     outline: none; 
 }
 
-button {
+.link-container {
+    display: flex;
+    justify-content: center;
+}
+
+.link-btn {
+    background: none;
+    border: none;
+    color: #007bff;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.login-button, .signup-button {
     width: 100%;
     padding: 12px;
     border: none;
@@ -71,17 +89,5 @@ button {
     font-size: 16px;
     cursor: pointer;
     margin-bottom: 20px; 
+    text-decoration: none;
 }
-
-button[type='submit'] {
-    border-radius: 5px;
-}
-
-.link-btn {
-    background: none;
-    color: #007bff;
-    text-decoration: underline;
-    cursor: pointer;
-    font-size: 14px; 
-}
-

@@ -19,7 +19,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/appointments', appointmentRoutes);
-app.use('/api/reportRoutes', reportRoutes);
+app.use('/api/reports', reportRoutes);
 
 
 const createTables = fs.readFileSync(path.join(__dirname, 'migrations', 'create_tables.sql'), 'utf-8');
