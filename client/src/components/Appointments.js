@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import PaginationComponent from './PaginationComponent'
 
 function Appointments({ appointments, setAppointments }) {
   const [newAppointment, setNewAppointment] = useState({
@@ -22,6 +23,17 @@ function Appointments({ appointments, setAppointments }) {
 
   const [selectedHospital, setSelectedHospital] = useState('')
   const [selectedDepartment, setSelectedDepartment] = useState('')
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const [appointmentsPerPage] = useState(11)
+
+  const indexOfLastAppointment = currentPage * appointmentsPerPage
+  const indexOfFirstAppointment = indexOfLastAppointment - appointmentsPerPage
+  const currentAppointments = appointments.slice(indexOfFirstAppointment, indexOfLastAppointment)
+
+  const totalPages = Math.ceil(appointments.length / appointmentsPerPage)
+
+  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber)
 
   useEffect(() => {
     axios.get('/api/appointments/hospitals')
@@ -372,7 +384,7 @@ function Appointments({ appointments, setAppointments }) {
           </tr>
         </thead>
         <tbody>
-          {appointments.map(appointment => (
+          {currentAppointments.map(appointment => (
             <tr key={appointment.appointment_id}>
               <td>{appointment.appointment_id}</td>
               <td>{`${appointment.doctor_first_name} ${appointment.doctor_last_name}`}</td>
@@ -390,6 +402,12 @@ function Appointments({ appointments, setAppointments }) {
           ))}
         </tbody>
       </table>
+
+      <PaginationComponent 
+        currentPage={currentPage} 
+        totalPages={totalPages} 
+        onPageChange={handlePageChange} 
+      />
     </div>
   )
 }
