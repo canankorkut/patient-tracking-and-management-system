@@ -5,6 +5,7 @@ const authenticateToken = require('../middlewares/authenticateToken');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+// Get information of patient with specific ID
 router.get('/:id', authenticateToken, async(req, res) => {
     const { id } = req.params;
     const { user } = req;
@@ -25,6 +26,7 @@ router.get('/:id', authenticateToken, async(req, res) => {
     }
 });
 
+// Get patients' information
 router.get('/', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM patients');
@@ -35,6 +37,7 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Create a patient
 router.post('/', async (req, res) => {
     const {email, password, role, first_name, last_name, date_of_birth, gender, phone_number, address} = req.body;
 
@@ -61,6 +64,7 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Update patient
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { first_name, last_name, date_of_birth, gender, phone_number, address } = req.body;
@@ -80,6 +84,36 @@ router.put('/:id', async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Delete a patient
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const patientResult = await pool.query('SELECT user_id FROM patients WHERE patient_id = $1', [id]);
+        if (patientResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Patient not found' });
+        }
+        
+        const userId = patientResult.rows[0].user_id;
+
+        const result = await pool.query('SELECT * FROM patients WHERE patient_id = $1', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).send('Patient not found');
+        }
+
+        await pool.query('DELETE FROM patients WHERE patient_id = $1', [id]);
+
+        if (userId) {
+            await pool.query('DELETE FROM users WHERE user_id = $1', [userId]);
+        }
+
+        res.status(204).send(); 
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Error deleting patient');
     }
 });
 

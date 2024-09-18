@@ -19,6 +19,8 @@ function Patients({patients, setPatients}) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [updatePatient, setUpdatePatient] = useState(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [patientToDelete, setPatientToDelete] = useState(null)
 
   const [currentPage, setCurrentPage] = useState(1)
   const [patientsPerPage] = useState(11)
@@ -96,6 +98,26 @@ function Patients({patients, setPatients}) {
       })
       .catch(error => {
         console.error('Error updating patient:', error)
+      })
+  }
+
+  const handleDeleteClick = (patientId) => {
+    console.log("Patient id:", patientId)
+    setPatientToDelete(patientId)
+    setShowDeleteModal(true)
+  }
+
+  const handleDeletePatient = () => {
+    axios.delete(`/api/patients/${patientToDelete}`)
+      .then(() => {
+        setPatients(prevPatients => 
+          prevPatients.filter(patient => patient.patient_id !== patientToDelete)
+        )
+        setShowDeleteModal(false)
+        setPatientToDelete(null)
+      })
+      .catch(error => {
+        console.error('Error deleting patient:', error)
       })
   }
   
@@ -307,6 +329,32 @@ function Patients({patients, setPatients}) {
         </div>
       )}
 
+      {showDeleteModal && (
+        <div className='modal fade show d-block' role='dialog'>
+          <div className='modal-dialog'>
+            <div className='modal-content'>
+              <div className='modal-header d-flex justify-content-between'>
+                <h5 className='modal-title'>Delete Patient</h5>
+                <div className='close' onClick={() => setShowDeleteModal(false)} style={{ cursor: 'pointer' }}>
+                  <span className='fs-2'>&times;</span>
+                </div>
+              </div>
+              <div className='modal-body mt-3 mb-3'>
+                Are you sure you want to delete this patient?
+              </div>
+              <div className='modal-footer'>
+                <button type='button' className='btn btn-secondary mb-2' onClick={() => setShowDeleteModal(false)}>
+                  Cancel
+                </button>
+                <button type='button' className='btn btn-danger' onClick={handleDeletePatient}>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <table className='table text-center'>
         <thead>
           <tr>
@@ -333,7 +381,7 @@ function Patients({patients, setPatients}) {
               <td>
                 <div className='d-flex'>
                 <button type='button' className='btn btn-outline-secondary me-2' onClick={() => handleUpdateClick(patient)}>Update</button>
-                <button type='button' className='btn btn-outline-danger' >Delete</button>
+                <button type='button' className='btn btn-outline-danger' onClick={() => handleDeleteClick(patient.patient_id)}>Delete</button>
                 </div>
               </td>
             </tr>
