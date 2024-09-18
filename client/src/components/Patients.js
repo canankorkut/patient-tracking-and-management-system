@@ -17,6 +17,8 @@ function Patients({patients, setPatients}) {
   })
 
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [updatePatient, setUpdatePatient] = useState(null)
 
   const [currentPage, setCurrentPage] = useState(1)
   const [patientsPerPage] = useState(11)
@@ -64,6 +66,37 @@ function Patients({patients, setPatients}) {
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setNewPatient({ ...newPatient, [name]: value })
+  }
+
+  const handleUpdateInputChange = (e) => {
+    const { name, value } = e.target
+    
+    setUpdatePatient(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleUpdateClick = (patient) => {
+    setUpdatePatient(patient)
+    setShowUpdateModal(true)
+  }
+
+  const handleUpdatePatient = () => {
+    console.log('Update Patient Data:', updatePatient)
+    if (!updatePatient || !updatePatient.patient_id) {
+      console.error('Patient ID is missing.')
+      return
+    }
+
+    axios.put(`/api/patients/${updatePatient.patient_id}`, updatePatient)
+      .then(response => {
+        setShowUpdateModal(false)
+        console.log('Updated Patients Data:', response.data)
+        setPatients(prevPatients => 
+          prevPatients.map(app => (app.patient_id === updatePatient.patient_id ? response.data : app))
+        )
+      })
+      .catch(error => {
+        console.error('Error updating patient:', error)
+      })
   }
   
   return (
@@ -184,6 +217,95 @@ function Patients({patients, setPatients}) {
         </div>
       )}
 
+      {showUpdateModal && updatePatient && (
+        <div className='modal fade show d-block' role='dialog'>
+          <div className='modal-dialog'>
+            <div className='modal-content'>
+              <div className='modal-header d-flex justify-content-between'>
+                <h5 className='modal-title'>Update Patient</h5>
+                <div className='close' onClick={() => setShowUpdateModal(false)} style={{ cursor: 'pointer' }}>
+                  <span className='fs-2'>&times;</span>
+                </div>
+              </div>
+              <div className='modal-body'>
+                <form>
+                  <div className='form-group mb-3 mt-2'>
+                    <label className='mb-1'>First Name</label>
+                    <input
+                      type='text'
+                      className='form-control'
+                      name='first_name'
+                      value={updatePatient.first_name}
+                      onChange={handleUpdateInputChange}
+                    />
+                  </div>
+                  <div className='form-group mb-3'>
+                    <label className='mb-1'>Last Name</label>
+                    <input
+                      type='text'
+                      className='form-control'
+                      name='last_name'
+                      value={updatePatient.last_name}
+                      onChange={handleUpdateInputChange}
+                    />
+                  </div>
+                  <div className='form-group mb-3'>
+                    <label className='mb-1'>Date of Birth</label>
+                    <input
+                      type='date'
+                      className='form-control'
+                      name='date_of_birth'
+                      value={updatePatient.date_of_birth}
+                      onChange={handleUpdateInputChange}
+                    />
+                  </div>
+                  <div className='form-group mb-3'>
+                    <label className='mb-1'>Gender</label>
+                    <select
+                      className='form-control'
+                      name='gender'
+                      value={updatePatient.gender}
+                      onChange={handleUpdateInputChange}
+                    >
+                      <option value=''>Select Gender</option>
+                      <option value='Male'>Male</option>
+                      <option value='Female'>Female</option>
+                    </select>
+                  </div>
+                  <div className='form-group mb-3'>
+                    <label className='mb-1'>Phone Number</label>
+                    <input
+                      type='text'
+                      className='form-control'
+                      name='phone_number'
+                      value={updatePatient.phone_number}
+                      onChange={handleUpdateInputChange}
+                    />
+                  </div>
+                  <div className='form-group mb-3'>
+                    <label className='mb-1'>Address</label>
+                    <input 
+                      type='text'
+                      className='form-control'
+                      name='address'
+                      value={updatePatient.address}
+                      onChange={handleUpdateInputChange}
+                    />
+                  </div>
+                </form>
+              </div>
+              <div className='modal-footer'>
+                <button type='button' className='btn btn-secondary mb-2' onClick={() => setShowUpdateModal(false)}>
+                  Close
+                </button>
+                <button type='button' className='btn btn-primary' onClick={handleUpdatePatient}>
+                  Update Patient
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <table className='table text-center'>
         <thead>
@@ -210,7 +332,7 @@ function Patients({patients, setPatients}) {
               <td>{patient.address}</td>
               <td>
                 <div className='d-flex'>
-                <button type='button' className='btn btn-outline-secondary me-2' >Update</button>
+                <button type='button' className='btn btn-outline-secondary me-2' onClick={() => handleUpdateClick(patient)}>Update</button>
                 <button type='button' className='btn btn-outline-danger' >Delete</button>
                 </div>
               </td>

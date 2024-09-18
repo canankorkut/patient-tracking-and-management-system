@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../database');
 const authenticateToken = require('../middlewares/authenticateToken');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 router.get('/:id', authenticateToken, async(req, res) => {
     const { id } = req.params;
@@ -37,10 +39,11 @@ router.post('/', async (req, res) => {
     const {email, password, role, first_name, last_name, date_of_birth, gender, phone_number, address} = req.body;
 
     try {
+        const hashedPassword = await bcrypt.hash(password, 10);
         const userResult = await pool.query(
             `INSERT INTO users (email, password, role) 
              VALUES ($1, $2, $3) RETURNING user_id`,
-            [email, password, role]
+            [email, hashedPassword, role]
         );
 
         const user_id = userResult.rows[0].user_id;
@@ -57,4 +60,27 @@ router.post('/', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+
+router.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    const { first_name, last_name, date_of_birth, gender, phone_number, address } = req.body;
+
+    try {
+        const result = await pool.query(
+            `UPDATE patients SET first_name = $1, last_name = $2, date_of_birth = $3, gender = $4, phone_number = $5, address = $6
+             WHERE patient_id = $7 RETURNING *`,
+            [first_name, last_name, date_of_birth, gender, phone_number, address, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Patient not found' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 module.exports = router;
