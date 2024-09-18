@@ -28,6 +28,20 @@ function Login() {
                     } else {
                         alert('Patient ID not found')
                     }
+                } else if (role === 'doctor') {
+                    if (roleDetails && roleDetails.doctor_id) {
+                        localStorage.setItem('doctor_id', roleDetails.doctor_id)
+                        navigate('/doctor')
+                    } else {
+                        alert('Doctor ID not found')
+                    }
+                } else if (role === 'admin') {
+                    if (roleDetails && roleDetails.admin_id) {
+                        localStorage.setItem('admin_id', roleDetails.admin_id)
+                        navigate('/admin')
+                    } else {
+                        alert('Admin ID not found')
+                    }
                 } else {
                     alert('Role not recognized')
                 }

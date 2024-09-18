@@ -23,4 +23,38 @@ router.get('/:id', authenticateToken, async(req, res) => {
     }
 });
 
+router.get('/', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM patients');
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+router.post('/', async (req, res) => {
+    const {email, password, role, first_name, last_name, date_of_birth, gender, phone_number, address} = req.body;
+
+    try {
+        const userResult = await pool.query(
+            `INSERT INTO users (email, password, role) 
+             VALUES ($1, $2, $3) RETURNING user_id`,
+            [email, password, role]
+        );
+
+        const user_id = userResult.rows[0].user_id;
+
+        const patientResult = await pool.query(
+            `INSERT INTO patients (user_id, first_name, last_name, date_of_birth, gender, phone_number, address)
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+            [user_id, first_name, last_name, date_of_birth, gender, phone_number, address]
+        );
+
+        res.status(201).json(patientResult.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
 module.exports = router;
