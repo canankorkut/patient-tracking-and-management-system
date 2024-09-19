@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../database');
 const authenticateToken = require('../middlewares/authenticateToken');
+const bcrypt = require('bcrypt');
 
 router.get('/:id', authenticateToken, async(req, res) => {
     const { id } = req.params;
@@ -40,6 +41,42 @@ router.get('/:id/patients', authenticateToken, async(req, res) => {
         `, [id]);
 
         res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+router.get('/', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM doctors');
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+router.post('/', async (req, res) => {
+    const {email, password, role, first_name, last_name, specialization, hospital_affiliation} = req.body;
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const userResult = await pool.query(
+            `INSERT INTO users (email, password, role) 
+             VALUES ($1, $2, $3) RETURNING user_id`,
+            [email, hashedPassword, role]
+        );
+
+        const user_id = userResult.rows[0].user_id;
+
+        const doctorResult = await pool.query(
+            `INSERT INTO doctors (user_id, first_name, last_name, specialization, hospital_affiliation)
+             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [user_id, first_name, last_name, specialization, hospital_affiliation]
+        );
+
+        res.status(201).json(doctorResult.rows[0]);
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Server error' });

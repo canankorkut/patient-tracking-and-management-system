@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import Patients from '../components/Patients'
-// import Doctors from '../components/Doctors'
+import Doctors from '../components/Doctors'
 // import MedicalReports from '../components/MedicalReports'
 import logo from '../assets/logo.png'
 import '../styles/Patient.css'
 
 function Admin() {
     const [patients, setPatients] = useState([])
-    // const [doctors, setDoctors] = useState([])
+    const [doctors, setDoctors] = useState([])
     // const [reports, setReports] = useState([])
     const [activeTab, setActiveTab] = useState('patients')
     const navigate = useNavigate()
@@ -39,13 +39,13 @@ function Admin() {
                     console.error('Error fetching patients:', error)
                 })
 
-            // axios.get(`/api/doctors?admin_id=${adminId}`)
-            //     .then(doctorsResponse => {
-            //         setDoctors(doctorsResponse.data)
-            //     })
-            //     .catch(error => {
-            //         console.error('Error fetching doctors:', error)
-            //     })
+            axios.get(`/api/doctors`)
+                .then(doctorsResponse => {
+                    setDoctors(doctorsResponse.data)
+                })
+                .catch(error => {
+                    console.error('Error fetching doctors:', error)
+                })
 
             // axios.get(`/api/reports?admin_id=${adminId}`)
             //     .then(reportsResponse => {
@@ -113,10 +113,10 @@ function Admin() {
                     {activeTab === 'patients' && (
                         <Patients patients={patients} setPatients={setPatients} />
                     )}
-                    {/* {activeTab === 'doctors' && (
-                        <Doctors doctors={doctors} />
+                    {activeTab === 'doctors' && (
+                        <Doctors doctors={doctors} setDoctors={setDoctors}/>
                     )}
-                    {activeTab === 'reports' && (
+                    {/* {activeTab === 'reports' && (
                         <MedicalReports reports={reports} />
                     )} */}
                 </main>
