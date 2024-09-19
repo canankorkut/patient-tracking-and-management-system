@@ -83,4 +83,26 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    const { first_name, last_name, specialization, hospital_affiliation } = req.body;
+
+    try {
+        const result = await pool.query(
+            `UPDATE doctors SET first_name = $1, last_name = $2, specialization = $3, hospital_affiliation = $4
+             WHERE doctor_id = $5 RETURNING *`,
+            [first_name, last_name, specialization, hospital_affiliation, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Doctor not found' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 module.exports = router;

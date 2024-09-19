@@ -16,6 +16,7 @@ function Doctors({doctors, setDoctors}) {
 
   const [showAddModal, setShowAddModal] = useState(false)
   const [updateDoctor, setUpdateDoctor] = useState(null)
+  const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [hospitals, setHospitals] = useState([])
   const [departments, setDepartments] = useState([])
   const [selectedHospital, setSelectedHospital] = useState('')
@@ -72,7 +73,6 @@ function Doctors({doctors, setDoctors}) {
         const doctors = response.data
         setDoctors(doctors)
         
-        // Hastaneleri çıkart
         const hospitalsList = [...new Set(doctors.map(doctor => doctor.hospital_affiliation))]
         setHospitals(hospitalsList)
       })
@@ -102,6 +102,41 @@ function Doctors({doctors, setDoctors}) {
     }
   }
 
+  const handleUpdateInputChange = (e) => {
+    const { name, value } = e.target
+    
+    setUpdateDoctor(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleUpdateClick = (doctor) => {
+    setUpdateDoctor(doctor)
+    setShowUpdateModal(true)
+  }
+
+  const handleUpdateDoctor = () => {
+    console.log('Update Doctor Data:', updateDoctor)
+    if (!updateDoctor || !updateDoctor.doctor_id) {
+      console.error('Doctor ID is missing.')
+      return
+    }
+
+    axios.put(`/api/doctors/${updateDoctor.doctor_id}`, {
+      ...updateDoctor,
+      hospital_affiliation: selectedHospital,
+      specialization: updateDoctor.specialization
+    })
+      .then(response => {
+        setShowUpdateModal(false)
+        console.log('Updated Doctors Data:', response.data)
+        setDoctors(prevDoctors => 
+          prevDoctors.map(app => (app.doctor_id === updateDoctor.doctor_id ? response.data : app))
+        )
+      })
+      .catch(error => {
+        console.error('Error updating doctor:', error)
+      })
+  }
+
   return (
     <div className='p-4'>
       <div className='d-inline-block mb-4'>
@@ -123,25 +158,25 @@ function Doctors({doctors, setDoctors}) {
                 <div className='modal-body'>
                   <form>
                     <div className='form-group mb-3 mt-2'>
-                        <label className='mb-1'>First Name</label>
-                        <input
-                          type='text'
-                          className='form-control'
-                          name='first_name'
-                          value={newDoctor.first_name}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                      <div className='form-group mb-3'>
-                        <label className='mb-1'>Last Name</label>
-                        <input
-                          type='text'
-                          className='form-control'
-                          name='last_name'
-                          value={newDoctor.last_name}
-                          onChange={handleInputChange}
-                        />
-                      </div>
+                      <label className='mb-1'>First Name</label>
+                      <input
+                        type='text'
+                        className='form-control'
+                        name='first_name'
+                        value={newDoctor.first_name}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div className='form-group mb-3'>
+                      <label className='mb-1'>Last Name</label>
+                      <input
+                        type='text'
+                        className='form-control'
+                        name='last_name'
+                        value={newDoctor.last_name}
+                        onChange={handleInputChange}
+                      />
+                    </div>
                     <div className='form-group mb-3'>
                       <label className='mb-1'>Email</label>
                       <input
@@ -199,6 +234,75 @@ function Doctors({doctors, setDoctors}) {
         </div>
       )}
 
+      {showUpdateModal && updateDoctor && (
+        <div className='modal fade show d-block' role='dialog'>
+          <div className='modal-dialog'>
+            <div className='modal-content'>
+              <div className='modal-header d-flex justify-content-between'>
+                <h5 className='modal-title'>Update Doctor</h5>
+                <div className='close' onClick={() => setShowUpdateModal(false)} style={{ cursor: 'pointer' }}>
+                  <span className='fs-2'>&times;</span>
+                </div>
+              </div>
+              <div className='modal-body'>
+                <form>
+                  <div className='form-group mb-3 mt-2'>
+                    <label className='mb-1'>First Name</label>
+                    <input
+                      type='text'
+                      className='form-control'
+                      name='first_name'
+                      value={updateDoctor.first_name}
+                      onChange={handleUpdateInputChange}
+                    />
+                  </div>
+                  <div className='form-group mb-3'>
+                    <label className='mb-1'>Last Name</label>
+                    <input
+                      type='text'
+                      className='form-control'
+                      name='last_name'
+                      value={updateDoctor.last_name}
+                      onChange={handleUpdateInputChange}
+                    />
+                  </div>
+                  <div className='form-group mb-3 mt-2'>
+                    <label className='mb-1'>Hospital</label>
+                    <select className='form-control'name='hospital' onChange={handleHospitalChange}>
+                      <option value=''>Select Hospital</option>
+                      {hospitals.map(hospital => (
+                        <option key={hospital}  value={hospital}>
+                          {hospital}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className='form-group mb-3'>
+                    <label className='mb-1'>Department</label>
+                    <select className='form-control' name='department' onChange={handleDepartmentChange} disabled={!selectedHospital}>
+                      <option value=''>Select Department</option>
+                      {departments.map(department => (
+                        <option key={department}  value={department}>
+                          {department}
+                        </option>
+                      ))}
+                    </select>
+                  </div>  
+                </form>
+              </div>
+              <div className='modal-footer'>
+                <button type='button' className='btn btn-secondary mb-2' onClick={() => setShowUpdateModal(false)}>
+                  Close
+                </button>
+                <button type='button' className='btn btn-primary' onClick={handleUpdateDoctor}>
+                  Update Doctor
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <table className='table text-center'>
         <thead>
           <tr>
@@ -220,7 +324,7 @@ function Doctors({doctors, setDoctors}) {
               <td>{doctor.hospital_affiliation}</td>
               <td>
                 <div className='d-flex'>
-                <button type='button' className='btn btn-outline-secondary me-2' >Update</button>
+                <button type='button' className='btn btn-outline-secondary me-2' onClick={() => handleUpdateClick(doctor)}>Update</button>
                 <button type='button' className='btn btn-outline-danger' >Delete</button>
                 </div>
               </td>
