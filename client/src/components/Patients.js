@@ -379,9 +379,9 @@ function Patients({patients, setPatients}) {
               <td>{patient.phone_number}</td>
               <td>{patient.address}</td>
               <td>
-                <div className='d-flex'>
-                <button type='button' className='btn btn-outline-secondary me-2' onClick={() => handleUpdateClick(patient)}>Update</button>
-                <button type='button' className='btn btn-outline-danger' onClick={() => handleDeleteClick(patient.patient_id)}>Delete</button>
+                <div className='d-flex justify-content-center'>
+                  <button type='button' className='btn btn-outline-secondary me-2' onClick={() => handleUpdateClick(patient)}>Update</button>
+                  <button type='button' className='btn btn-outline-danger' onClick={() => handleDeleteClick(patient.patient_id)}>Delete</button>
                 </div>
               </td>
             </tr>

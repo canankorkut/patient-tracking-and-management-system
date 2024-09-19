@@ -17,6 +17,8 @@ function Doctors({doctors, setDoctors}) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [updateDoctor, setUpdateDoctor] = useState(null)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [doctorToDelete, setDoctorToDelete] = useState(null)
   const [hospitals, setHospitals] = useState([])
   const [departments, setDepartments] = useState([])
   const [selectedHospital, setSelectedHospital] = useState('')
@@ -134,6 +136,26 @@ function Doctors({doctors, setDoctors}) {
       })
       .catch(error => {
         console.error('Error updating doctor:', error)
+      })
+  }
+
+  const handleDeleteClick = (doctorId) => {
+    console.log("Doctor id:", doctorId)
+    setDoctorToDelete(doctorId)
+    setShowDeleteModal(true)
+  }
+
+  const handleDeleteDoctor = () => {
+    axios.delete(`/api/doctors/${doctorToDelete}`)
+      .then(() => {
+        setDoctors(prevDoctors => 
+          prevDoctors.filter(doctor => doctor.doctor_id !== doctorToDelete)
+        )
+        setShowDeleteModal(false)
+        setDoctorToDelete(null)
+      })
+      .catch(error => {
+        console.error('Error deleting doctor:', error)
       })
   }
 
@@ -303,6 +325,32 @@ function Doctors({doctors, setDoctors}) {
         </div>
       )}
 
+      {showDeleteModal && (
+        <div className='modal fade show d-block' role='dialog'>
+          <div className='modal-dialog'>
+            <div className='modal-content'>
+              <div className='modal-header d-flex justify-content-between'>
+                <h5 className='modal-title'>Delete Doctor</h5>
+                <div className='close' onClick={() => setShowDeleteModal(false)} style={{ cursor: 'pointer' }}>
+                  <span className='fs-2'>&times;</span>
+                </div>
+              </div>
+              <div className='modal-body mt-3 mb-3'>
+                Are you sure you want to delete this doctor?
+              </div>
+              <div className='modal-footer'>
+                <button type='button' className='btn btn-secondary mb-2' onClick={() => setShowDeleteModal(false)}>
+                  Cancel
+                </button>
+                <button type='button' className='btn btn-danger' onClick={handleDeleteDoctor}>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <table className='table text-center'>
         <thead>
           <tr>
@@ -323,9 +371,9 @@ function Doctors({doctors, setDoctors}) {
               <td>{doctor.specialization}</td>
               <td>{doctor.hospital_affiliation}</td>
               <td>
-                <div className='d-flex'>
-                <button type='button' className='btn btn-outline-secondary me-2' onClick={() => handleUpdateClick(doctor)}>Update</button>
-                <button type='button' className='btn btn-outline-danger' >Delete</button>
+                <div className='d-flex justify-content-center'>
+                  <button type='button' className='btn btn-outline-secondary me-2' onClick={() => handleUpdateClick(doctor)}>Update</button>
+                  <button type='button' className='btn btn-outline-danger' onClick={() => handleDeleteClick(doctor.doctor_id)}>Delete</button>
                 </div>
               </td>
             </tr>

@@ -393,7 +393,7 @@ function Appointments({ appointments, setAppointments }) {
               <td>{appointment.appointment_date}</td>
               <td>{appointment.appointment_time}</td>
               <td>
-                <div className='d-flex'>
+                <div className='d-flex justify-content-center'>
                 <button type='button' className='btn btn-outline-secondary me-2' onClick={() => handleUpdateClick(appointment)}>Update</button>
                 <button type='button' className='btn btn-outline-danger' onClick={() => handleDeleteClick(appointment.appointment_id)}>Delete</button>
                 </div>

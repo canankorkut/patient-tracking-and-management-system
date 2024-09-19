@@ -105,4 +105,33 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const doctorResult = await pool.query('SELECT user_id FROM doctors WHERE doctor_id = $1', [id]);
+        if (doctorResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Doctor not found' });
+        }
+        
+        const userId = doctorResult.rows[0].user_id;
+
+        const result = await pool.query('SELECT * FROM doctors WHERE doctor_id = $1', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).send('Doctor not found');
+        }
+
+        await pool.query('DELETE FROM doctors WHERE doctor_id = $1', [id]);
+
+        if (userId) {
+            await pool.query('DELETE FROM users WHERE user_id = $1', [userId]);
+        }
+
+        res.status(204).send(); 
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Error deleting doctor');
+    }
+});
+
 module.exports = router;
