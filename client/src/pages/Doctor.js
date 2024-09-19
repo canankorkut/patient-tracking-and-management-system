@@ -13,13 +13,14 @@ function Doctor() {
     const navigate = useNavigate()
     const doctorId = localStorage.getItem('doctor_id')
 
+
     useEffect(() => {
         const token = localStorage.getItem('token')
 
         if(token) {
             axios.get('/api/users/user', {headers: { Authorization: `Bearer ${token}`}})
                 .then(response => {
-                    console.log(response.data);
+                    console.log(response.data)
                 })
                 .catch(error => {
                     console.error('Error fetching user information:', error)
@@ -94,7 +95,7 @@ function Doctor() {
                     </div>
 
                     {activeTab === 'patients' ? (
-                        <Patients patients={patients}/>
+                        <Patients patients={patients} setPatients={setPatients} userRole={'doctor'}/>
                     ) : (
                         <MedicalReports reports={reports} />
                     )}

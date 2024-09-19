@@ -111,7 +111,7 @@ function Admin() {
                     </div>
 
                     {activeTab === 'patients' && (
-                        <Patients patients={patients} setPatients={setPatients} />
+                        <Patients patients={patients} setPatients={setPatients} userRole={'admin'}/>
                     )}
                     {activeTab === 'doctors' && (
                         <Doctors doctors={doctors} setDoctors={setDoctors}/>

@@ -2,7 +2,7 @@ import React, {useState} from 'react'
 import axios from 'axios'
 import PaginationComponent from './PaginationComponent'
 
-function Patients({patients, setPatients}) {
+function Patients({patients, setPatients, userRole}) {
   const [newPatient, setNewPatient] = useState({
     email: '',
     password: '',
@@ -124,12 +124,14 @@ function Patients({patients, setPatients}) {
   return (
     <div className='p-4'>
       <div className='d-inline-block mb-4'>
-        <button className='btn btn-outline-primary'  onClick={() => setShowAddModal(true)}>
-          Add Patient
-        </button>
+        {userRole === 'admin' && (
+          <button className='btn btn-outline-primary'  onClick={() => setShowAddModal(true)}>
+            Add Patient
+          </button>
+        )}
       </div>
 
-      {showAddModal && (
+      {showAddModal && userRole === 'admin' && (
         <div className='modal fade show d-block' role='dialog'>
             <div className='modal-dialog'>
               <div className='modal-content'>
@@ -239,7 +241,7 @@ function Patients({patients, setPatients}) {
         </div>
       )}
 
-      {showUpdateModal && updatePatient && (
+      {showUpdateModal && updatePatient && userRole === 'admin' && (
         <div className='modal fade show d-block' role='dialog'>
           <div className='modal-dialog'>
             <div className='modal-content'>
@@ -329,7 +331,7 @@ function Patients({patients, setPatients}) {
         </div>
       )}
 
-      {showDeleteModal && (
+      {showDeleteModal && userRole === 'admin' && (
         <div className='modal fade show d-block' role='dialog'>
           <div className='modal-dialog'>
             <div className='modal-content'>
@@ -365,7 +367,7 @@ function Patients({patients, setPatients}) {
             <th>Gender</th>
             <th>Phone Number</th>
             <th>Address</th>
-            <th>Actions</th>
+            {userRole === 'admin' && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -378,12 +380,14 @@ function Patients({patients, setPatients}) {
               <td>{patient.gender}</td>
               <td>{patient.phone_number}</td>
               <td>{patient.address}</td>
-              <td>
-                <div className='d-flex justify-content-center'>
-                  <button type='button' className='btn btn-outline-secondary me-2' onClick={() => handleUpdateClick(patient)}>Update</button>
-                  <button type='button' className='btn btn-outline-danger' onClick={() => handleDeleteClick(patient.patient_id)}>Delete</button>
-                </div>
-              </td>
+              {userRole === 'admin' && (
+                <td>
+                  <div className='d-flex justify-content-center'>
+                    <button type='button' className='btn btn-outline-secondary me-2' onClick={() => handleUpdateClick(patient)}>Update</button>
+                    <button type='button' className='btn btn-outline-danger' onClick={() => handleDeleteClick(patient.patient_id)}>Delete</button>
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

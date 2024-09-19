@@ -24,15 +24,10 @@ router.get('/:id', authenticateToken, async(req, res) => {
     }
 });
 
-router.get('/:id/patients', authenticateToken, async(req, res) => {
+router.get('/:id/patients', async(req, res) => {
     const { id } = req.params;
-    const { user } = req;
 
     try {
-        if(user.role === 'doctor') {
-            return res.status(403).json({ message: 'Access denied: Unauthorized' });
-        }
-        
         const result = await pool.query(`
             SELECT p.*
             FROM patients p

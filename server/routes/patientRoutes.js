@@ -3,7 +3,6 @@ const router = express.Router();
 const pool = require('../database');
 const authenticateToken = require('../middlewares/authenticateToken');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 
 // Get information of patient with specific ID
 router.get('/:id', authenticateToken, async(req, res) => {
