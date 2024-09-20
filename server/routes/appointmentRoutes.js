@@ -98,6 +98,14 @@ router.put('/:id', async (req, res) => {
     const values = [];
     let paramIndex = 1;
 
+    const currentAppointment = await pool.query(`SELECT * FROM appointments WHERE appointment_id = $1`, [id]);
+
+    if (currentAppointment.rows.length === 0) {
+        return res.status(404).json({ error: 'Appointment not found' });
+    }
+
+    const { patient_id } = currentAppointment.rows[0];
+
     if (appointment_date) {
         setClause.push(`appointment_date = $${paramIndex}`);
         values.push(appointment_date);
@@ -130,12 +138,13 @@ router.put('/:id', async (req, res) => {
     try {
         const result = await pool.query(query, values);
 
-        // Get updated appointment information
         const appointmentResult = await pool.query(`
             SELECT a.appointment_id, a.appointment_date, a.appointment_time, a.doctor_id,
+                   p.first_name AS patient_first_name, p.last_name AS patient_last_name,
                    d.first_name AS doctor_first_name, d.last_name AS doctor_last_name,
                    d.specialization, d.hospital_affiliation
             FROM appointments a
+            JOIN patients p ON a.patient_id = p.patient_id
             JOIN doctors d ON a.doctor_id = d.doctor_id
             WHERE a.appointment_id = $1
         `, [id]);
@@ -165,6 +174,31 @@ router.delete('/:id', (req, res) => {
         console.error('Error deleting appointment:', error);
         res.status(500).send('Error deleting appointment');
       });
+});
+
+// Get doctor's appointments
+router.get('/doctor-appointments', async (req, res) => {
+    const { doctor_id } = req.query;
+
+    try {
+        const result = await pool.query(`
+            SELECT a.appointment_id, a.appointment_date, a.appointment_time,
+                   p.first_name AS patient_first_name, p.last_name AS patient_last_name,
+                   p.phone_number, p.address
+            FROM appointments a
+            JOIN patients p ON a.patient_id = p.patient_id
+            WHERE a.doctor_id = $1    
+        `, [doctor_id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'No appointment found.' });
+        }
+
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
 module.exports = router;

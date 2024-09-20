@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import PaginationComponent from './PaginationComponent'
 
-function Appointments({ appointments, setAppointments }) {
+function Appointments({ appointments, setAppointments, userRole }) {
   const [newAppointment, setNewAppointment] = useState({
     hospital: '',
     department: '',
@@ -147,7 +147,9 @@ function Appointments({ appointments, setAppointments }) {
   }
 
   const handleUpdateClick = (appointment) => {
-    setUpdateAppointment(appointment)
+    console.log(appointment)
+    setUpdateAppointment(appointment);
+    
     setShowUpdateModal(true)
   }
 
@@ -161,7 +163,7 @@ function Appointments({ appointments, setAppointments }) {
     axios.put(`/api/appointments/${updateAppointment.appointment_id}`, updateAppointment)
       .then(response => {
         setShowUpdateModal(false)
-        console.log('Updatedd Appointments Data:', response.data)
+        console.log('Updated Appointments Data:', response.data)
         setAppointments(prevAppointments => 
           prevAppointments.map(app => (app.appointment_id === updateAppointment.appointment_id ? response.data : app))
         )
@@ -173,19 +175,36 @@ function Appointments({ appointments, setAppointments }) {
 
   const handleUpdateInputChange = (e) => {
     const { name, value } = e.target
-    
+   
     setUpdateAppointment(prev => ({ ...prev, [name]: value }))
   }
+  
+  useEffect(() => {
+    if(userRole === 'doctor') {
+      const doctorId = localStorage.getItem('doctor_id');
+      if (doctorId) {
+        axios.get(`/api/appointments/doctor-appointments`, { params: { doctor_id: doctorId } })
+          .then(response => {
+            setAppointments(response.data)
+          })
+          .catch(error => {
+            console.error('Error fetching doctor appointments:', error)
+          })
+      }
+    }
+  }, [])
   
   return (
     <div className='p-4'>
       <div className='d-inline-block mb-4'>
-        <button className='btn btn-outline-primary' onClick={() => setShowModal(true)}>
-          Add Appointment
-        </button>
+        { userRole === 'patient' && (
+          <button className='btn btn-outline-primary' onClick={() => setShowModal(true)}>
+            Add Appointment
+          </button>
+        )}
       </div>
 
-      {showModal && (
+      {showModal && userRole === 'patient' && (
         <div className='modal fade show d-block' role='dialog'>
             <div className='modal-dialog'>
               <div className='modal-content'>
@@ -303,39 +322,39 @@ function Appointments({ appointments, setAppointments }) {
               </div>
               <div className='modal-body'>
                 <form>
-                  <div className='form-group mb-3 mt-2'>
-                    <label className='mb-1'>Hospital</label>
-                    <select className='form-control' name='hospital' onChange={handleHospitalChange}>
+                  { userRole === 'patient' && (
+                    <><div className='form-group mb-3 mt-2'>
+                      <label className='mb-1'>Hospital</label>
+                      <select className='form-control' name='hospital' onChange={handleHospitalChange}>
                         <option value=''>Select Hospital</option>
                         {hospitals.map(hospital => (
-                          <option key={hospital.hospital_affiliation}  value={hospital.hospital_affiliation}>
+                          <option key={hospital.hospital_affiliation} value={hospital.hospital_affiliation}>
                             {hospital.hospital_affiliation}
                           </option>
                         ))}
-                    </select>
-                  </div>
-                  <div className='form-group mb-3'>
-                    <label className='mb-1'>Department</label>
-                    <select className='form-control' name='department' onChange={handleDepartmentChange} disabled={!selectedHospital}>
-                      <option value=''>Select Department</option>
-                        {departments.map(department => (
-                          <option key={department.specialization}  value={department.specialization}>
-                            {department.specialization}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                  <div className='form-group mb-3'>
-                    <label className='mb-1'>Doctor</label>
-                    <select className='form-control' name='doctor_id' onChange={handleDoctorChange} disabled={!selectedDepartment}>
-                        <option value=''>Select Doctor</option>
-                        {doctors.map(doctor => (
-                          <option key={doctor.doctor_id}  value={doctor.doctor_id}>
-                            {`${doctor.first_name} ${doctor.last_name}`}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
+                      </select>
+                    </div><div className='form-group mb-3'>
+                        <label className='mb-1'>Department</label>
+                        <select className='form-control' name='department' onChange={handleDepartmentChange} disabled={!selectedHospital}>
+                          <option value=''>Select Department</option>
+                          {departments.map(department => (
+                            <option key={department.specialization} value={department.specialization}>
+                              {department.specialization}
+                            </option>
+                          ))}
+                        </select>
+                      </div><div className='form-group mb-3'>
+                        <label className='mb-1'>Doctor</label>
+                        <select className='form-control' name='doctor_id' onChange={handleDoctorChange} disabled={!selectedDepartment}>
+                          <option value=''>Select Doctor</option>
+                          {doctors.map(doctor => (
+                            <option key={doctor.doctor_id} value={doctor.doctor_id}>
+                              {`${doctor.first_name} ${doctor.last_name}`}
+                            </option>
+                          ))}
+                        </select>
+                      </div></>
+                  )}
                   <div className='form-group mb-3'>
                     <label className='mb-1'>Appointment Date</label>
                     <input 
@@ -375,9 +394,19 @@ function Appointments({ appointments, setAppointments }) {
         <thead>
           <tr>
             <th scope='col'>Appointment ID</th>
-            <th scope='col'>Doctor Name</th>
-            <th scope='col'>Department</th>
-            <th scope='col'>Hospital</th>
+            { userRole === 'patient' && (
+              <>
+              <th scope='col'>Doctor Name</th>
+              <th scope='col'>Department</th>
+              <th scope='col'>Hospital</th>
+              </>
+            )}
+            { userRole === 'doctor' && (
+              <>
+              <th scope='col'>Patient First Name</th>
+              <th scope='col'>Patient Last Name</th>
+              </>
+            )}
             <th scope='col'>Appointment Date</th>
             <th scope='col'>Appointment Time</th>
             <th scope='col'>Actions</th>
@@ -387,9 +416,19 @@ function Appointments({ appointments, setAppointments }) {
           {currentAppointments.map(appointment => (
             <tr key={appointment.appointment_id}>
               <td>{appointment.appointment_id}</td>
-              <td>{`${appointment.doctor_first_name} ${appointment.doctor_last_name}`}</td>
-              <td>{appointment.specialization}</td>
-              <td>{appointment.hospital_affiliation}</td>
+              {userRole === 'patient' && (
+                <>
+                <td>{`${appointment.doctor_first_name} ${appointment.doctor_last_name}`}</td>
+                <td>{appointment.specialization}</td>
+                <td>{appointment.hospital_affiliation}</td>
+                </>
+              )}
+              {userRole === 'doctor' && (
+                <>
+                <td>{appointment.patient_first_name}</td>
+                <td>{appointment.patient_last_name}</td>
+                </>
+              )}
               <td>{appointment.appointment_date}</td>
               <td>{appointment.appointment_time}</td>
               <td>

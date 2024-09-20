@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import Patients from '../components/Patients'
+import Appointments from '../components/Appointments'
 import MedicalReports from '../components/MedicalReports'
 import logo from '../assets/logo.png'
 import '../styles/Patient.css'
@@ -12,6 +13,7 @@ function Doctor() {
     const [activeTab, setActiveTab] = useState('patients')
     const navigate = useNavigate()
     const doctorId = localStorage.getItem('doctor_id')
+    const [appointments, setAppointments] = useState([])
 
 
     useEffect(() => {
@@ -36,6 +38,14 @@ function Doctor() {
                 })
                 .catch(error => {
                     console.error('Error fetching patients:', error)
+                })
+
+            axios.get(`/api/appointments?doctor_id=${doctorId}`)
+                .then(appointmentsResponse => {
+                    setAppointments(appointmentsResponse.data)
+                })
+                .catch(error => {
+                    console.error('Error fetching appointments:', error)
                 })
 
             axios.get(`/api/reports?doctor_id=${doctorId}`)
@@ -67,6 +77,13 @@ function Doctor() {
                                 Patients
                             </button>
                             <button
+                                className={`btn btn-outline-primary w-100 mb-2 mt-2 ${activeTab === 'appointments' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('appointments')}
+                            >
+                                <i className='fa-solid fa-calendar-days me-2'></i>
+                                Appointments
+                            </button>
+                            <button
                                 className={`btn btn-outline-primary w-100 mt-2 ${activeTab === 'reports' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('reports')}
                             >
@@ -94,11 +111,16 @@ function Doctor() {
                         </div>
                     </div>
 
-                    {activeTab === 'patients' ? (
+                    {activeTab === 'patients' && (
                         <Patients patients={patients} setPatients={setPatients} userRole={'doctor'}/>
-                    ) : (
-                        <MedicalReports reports={reports} />
                     )}
+                    {activeTab === 'appointments' && (
+                        <Appointments appointments={appointments} setAppointments={setAppointments} userRole={'doctor'} />
+                    )}
+                    {activeTab === 'reports' && (
+                        <MedicalReports reports={reports}/>
+                    )}
+                       
                 </main>
             </div>
         </div>

@@ -94,7 +94,7 @@ function Patient() {
                     </div>
 
                     {activeTab === 'appointments' ? (
-                        <Appointments appointments={appointments} setAppointments={setAppointments} />
+                        <Appointments appointments={appointments} setAppointments={setAppointments} userRole={'patient'}/>
                     ) : (
                         <MedicalReports reports={reports} />
                     )}
