@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, act } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import Appointments from '../components/Appointments'
 import MedicalReports from '../components/MedicalReports'
+import Profile from '../components/Profile'
 import logo from '../assets/logo.png'
 import '../styles/Patient.css'
 
@@ -72,6 +73,13 @@ function Patient() {
                                 <i className='fa-solid fa-file-medical me-2'></i>
                                 Medical Reports
                             </button>
+                            <button
+                                className={`btn btn-outline-primary w-100 mt-3 ${activeTab === 'profile' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('profile')}
+                            >
+                                <i className='fa-solid fa-user me-2'></i>
+                                Profile
+                            </button>
                         </div>
                         <button
                             className='btn btn-outline-danger w-100 mb-3'
@@ -93,11 +101,15 @@ function Patient() {
                         </div>
                     </div>
 
-                    {activeTab === 'appointments' ? (
+                    {activeTab === 'appointments' && (
                         <Appointments appointments={appointments} setAppointments={setAppointments} userRole={'patient'}/>
-                    ) : (
+                    )}
+                    {activeTab === 'reports' && (
                         <MedicalReports reports={reports} />
                     )}
+                    {activeTab === 'profile' && (
+                        <Profile userRole={'patient'}/>
+                    )} 
                 </main>
             </div>
         </div>

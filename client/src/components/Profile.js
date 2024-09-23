@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 
-function Profile() {
+function Profile({userRole}) {
   const [profile, setProfile] = useState(null)
   
   useEffect(() => {
@@ -22,7 +22,21 @@ function Profile() {
   }
 
   const { email, role, roleDetails } = profile
-  const { first_name, last_name, specialization, hospital_affiliation } = roleDetails
+  let first_name, last_name, specialization, hospital_affiliation, date_of_birth, gender, phone_number, address
+
+  if (userRole === 'doctor') {
+    first_name = roleDetails.first_name
+    last_name = roleDetails.last_name
+    specialization = roleDetails.specialization
+    hospital_affiliation = roleDetails.hospital_affiliation
+  } else if (userRole === 'patient') {
+    first_name = roleDetails.first_name
+    last_name = roleDetails.last_name
+    date_of_birth = roleDetails.date_of_birth
+    gender = roleDetails.gender
+    phone_number = roleDetails.phone_number
+    address = roleDetails.address
+  }
 
   return (
     <div className="container d-flex justify-content-center align-items-center mt-4" >
@@ -33,8 +47,20 @@ function Profile() {
           <p className="card-text">Last Name: {last_name}</p>
           <p className="card-text">Role: {role}</p>
           <p className="card-text">Email: {email}</p>
-          <p className="card-text">Department: {specialization}</p>
-          <p className="card-text">Hospital: {hospital_affiliation}</p>
+          { userRole === 'doctor' && (
+            <>
+            <p className="card-text">Department: {specialization}</p>
+            <p className="card-text">Hospital: {hospital_affiliation}</p>
+            </>
+          )}
+          { userRole === 'patient' && (
+            <>
+            <p className="card-text">Date of Birth: {date_of_birth}</p>
+            <p className="card-text">Gender: {gender}</p>
+            <p className="card-text">Phone Number: {phone_number}</p>
+            <p className="card-text">Address: {address}</p>
+            </>
+          )}
         </div>
       </div>
     </div>

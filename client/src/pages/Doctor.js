@@ -128,7 +128,7 @@ function Doctor() {
                         <MedicalReports reports={reports}/>
                     )}
                     {activeTab === 'profile' && (
-                        <Profile/>
+                        <Profile userRole={'doctor'}/>
                     )}   
                 </main>
             </div>
