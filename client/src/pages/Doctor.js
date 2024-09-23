@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Patients from '../components/Patients'
 import Appointments from '../components/Appointments'
 import MedicalReports from '../components/MedicalReports'
+import Profile from '../components/Profile'
 import logo from '../assets/logo.png'
 import '../styles/Patient.css'
 
@@ -14,7 +15,6 @@ function Doctor() {
     const navigate = useNavigate()
     const doctorId = localStorage.getItem('doctor_id')
     const [appointments, setAppointments] = useState([])
-
 
     useEffect(() => {
         const token = localStorage.getItem('token')
@@ -54,7 +54,7 @@ function Doctor() {
                 })
                 .catch(error => {
                     console.error('Error fetching medical reports:', error)
-                })
+                })          
         }
     }, [doctorId])
 
@@ -90,6 +90,13 @@ function Doctor() {
                                 <i className='fa-solid fa-file-medical me-2'></i>
                                 Medical Reports
                             </button>
+                            <button
+                                className={`btn btn-outline-primary w-100 mt-3 ${activeTab === 'profile' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('profile')}
+                            >
+                                <i className='fa-solid fa-user me-2'></i>
+                                Profile
+                            </button>
                         </div>
                         <button
                             className='btn btn-outline-danger w-100 mb-3'
@@ -120,7 +127,9 @@ function Doctor() {
                     {activeTab === 'reports' && (
                         <MedicalReports reports={reports}/>
                     )}
-                       
+                    {activeTab === 'profile' && (
+                        <Profile/>
+                    )}   
                 </main>
             </div>
         </div>
