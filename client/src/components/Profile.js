@@ -36,6 +36,9 @@ function Profile({userRole}) {
     gender = roleDetails.gender
     phone_number = roleDetails.phone_number
     address = roleDetails.address
+  } else if (userRole === 'admin') {
+    first_name = roleDetails.first_name
+    last_name = roleDetails.last_name
   }
 
   return (

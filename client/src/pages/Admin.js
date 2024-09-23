@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Patients from '../components/Patients'
 import Doctors from '../components/Doctors'
 // import MedicalReports from '../components/MedicalReports'
+import Profile from '../components/Profile'
 import logo from '../assets/logo.png'
 import '../styles/Patient.css'
 
@@ -89,6 +90,13 @@ function Admin() {
                                 <i className='fa-solid fa-file-medical me-2'></i>
                                 Medical Reports
                             </button>
+                            <button
+                                className={`btn btn-outline-primary w-100 mt-3 ${activeTab === 'profile' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('profile')}
+                            >
+                                <i className='fa-solid fa-user me-2'></i>
+                                Profile
+                            </button>
                         </div>
                         <button
                             className='btn btn-outline-danger w-100 mb-3'
@@ -119,6 +127,10 @@ function Admin() {
                     {/* {activeTab === 'reports' && (
                         <MedicalReports reports={reports} />
                     )} */}
+                    {activeTab === 'profile' && (
+                        <Profile userRole={'admin'}/>
+                    )}   
+
                 </main>
             </div>
         </div>
