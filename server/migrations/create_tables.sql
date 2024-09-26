@@ -1,3 +1,7 @@
+--DROP TABLE IF EXISTS lab_results;
+--DROP TABLE IF EXISTS medical_reports;
+--DELETE FROM medical_reports;
+
 CREATE TABLE IF NOT EXISTS users (
     user_id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -46,6 +50,11 @@ CREATE TABLE IF NOT EXISTS medical_reports (
     doctor_id INT REFERENCES doctors(doctor_id) ON DELETE CASCADE,
     admin_id INT REFERENCES admin(admin_id) ON DELETE SET NULL,
     report_date DATE NOT NULL,
-    report_content JSONB NOT NULL,
-    image_url TEXT
+    report_content JSONB NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS lab_results (
+    result_id SERIAL PRIMARY KEY,
+    report_id INT NOT NULL REFERENCES medical_reports(report_id) ON DELETE CASCADE,
+    image_url TEXT NOT NULL
 );

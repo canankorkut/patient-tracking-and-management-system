@@ -113,23 +113,125 @@ async function seedData() {
             );
         }
 
-        // Add 1000 medical reports
-        for (let i = 0; i < 1000; i++) {
+        // Add 100 medical reports
+        for (let i = 0; i < 100; i++) {
             const patientIdResult = await pool.query('SELECT patient_id FROM patients ORDER BY RANDOM() LIMIT 1');
-            const doctorIdResult = await pool.query('SELECT doctor_id FROM doctors ORDER BY RANDOM() LIMIT 1');
+            const doctorIdResult = await pool.query('SELECT doctor_id, specialization FROM doctors ORDER BY RANDOM() LIMIT 1');
             const adminIdResult = await pool.query('SELECT admin_id FROM admin ORDER BY RANDOM() LIMIT 1');
 
             const patientId = patientIdResult.rows[0].patient_id;
             const doctorId = doctorIdResult.rows[0].doctor_id;
             const adminId = adminIdResult.rows[0].admin_id;
+            const specialization = doctorIdResult.rows[0].specialization;
             const reportDate = faker.date.past().toISOString().split('T')[0];
-            const reportContent = JSON.stringify({details: faker.lorem.paragraph() });
-            const imageURL = faker.image.url();
+
+            let diagnosis, treatment;
+            switch (specialization) {
+                case 'Internal Medicine':
+                    diagnosis = faker.helpers.arrayElement(['Hypertension', 'Diabetes', 'Anemia']);
+                    treatment = faker.helpers.arrayElement(['Medication', 'Diet Control', 'Regular Monitoring']);
+                    break;
+                case 'Pediatrics':
+                    diagnosis = faker.helpers.arrayElement(['Asthma', 'Bronchitis', 'Growth Issues']);
+                    treatment = faker.helpers.arrayElement(['Inhaler Therapy', 'Pediatric Care', 'Regular Checkups']);
+                    break;
+                case 'Orthopedic Surgery':
+                    diagnosis = faker.helpers.arrayElement(['Fracture', 'Dislocation', 'Arthritis']);
+                    treatment = faker.helpers.arrayElement(['Surgery', 'Physical Therapy', 'Medication']);
+                    break;
+                case 'Cardiology':
+                    diagnosis = faker.helpers.arrayElement(['Coronary Artery Disease', 'Heart Failure', 'Arrhythmia']);
+                    treatment = faker.helpers.arrayElement(['Angioplasty', 'Bypass Surgery', 'Medication']);
+                    break;
+                case 'Neurology':
+                    diagnosis = faker.helpers.arrayElement(['Migraine', 'Epilepsy', 'Multiple Sclerosis']);
+                    treatment = faker.helpers.arrayElement(['Medication', 'Physical Therapy', 'Surgical Intervention']);
+                    break;
+                case 'Dermatology':
+                    diagnosis = faker.helpers.arrayElement(['Acne', 'Psoriasis', 'Eczema']);
+                    treatment = faker.helpers.arrayElement(['Topical Cream', 'Oral Medication', 'Laser Treatment']);
+                    break;
+                case 'Psychiatry':
+                    diagnosis = faker.helpers.arrayElement(['Depression', 'Anxiety', 'Bipolar Disorder']);
+                    treatment = faker.helpers.arrayElement(['Therapy', 'Medication', 'Cognitive Behavioral Therapy']);
+                    break;
+                default:
+                    diagnosis = faker.helpers.arrayElement(['General Checkup']);
+                    treatment = faker.helpers.arrayElement(['Monitoring', 'Regular Care']);
+            }
+
+            const reportContent = JSON.stringify({
+                diagnosis: diagnosis,
+                treatment: treatment,
+            });
 
             await pool.query(
-                'INSERT INTO medical_reports (patient_id, doctor_id, admin_id, report_date, report_content, image_url) VALUES ($1, $2, $3, $4, $5, $6)',
-                [patientId, doctorId, adminId, reportDate, reportContent, imageURL]
+                'INSERT INTO medical_reports (patient_id, doctor_id, admin_id, report_date, report_content) VALUES ($1, $2, $3, $4, $5)',
+                [patientId, doctorId, adminId, reportDate, reportContent]
             );
+        }
+
+        // Add 100 lab results
+        for (let i = 0; i < 100; i++) {
+            const reportResult = await pool.query('SELECT report_id, report_content FROM medical_reports ORDER BY RANDOM() LIMIT 1');
+            const reportId = reportResult.rows[0].report_id;
+            const reportContent = reportResult.rows[0].report_content;
+            const diagnosis = reportContent.diagnosis;
+
+            let labResult, imageUrl;
+            switch (diagnosis) {
+                case 'Hypertension':
+                case 'Diabetes':
+                case 'Anemia':
+                    labResult = 'Blood Test';
+                    imageUrl = 'https://images.unsplash.com/photo-1576086631093-32b333463801?q=80&w=2080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+                    break;
+                case 'Asthma':
+                case 'Bronchitis':
+                case 'Growth Issues':
+                    labResult = 'Spirometry';
+                    imageUrl = 'https://plus.unsplash.com/premium_photo-1716679813868-9d7e3b4532d2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+                    break;
+                case 'Fracture':
+                case 'Dislocation':
+                case 'Arthritis':
+                    labResult = 'X-Ray';
+                    imageUrl = 'https://plus.unsplash.com/premium_photo-1658506655357-8713cf0c6b69?q=80&w=2074&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+                    break;
+                case 'Coronary Artery Disease':
+                case 'Heart Failure':
+                case 'Arrhythmia':
+                    labResult = 'ECG';
+                    imageUrl = 'https://plus.unsplash.com/premium_photo-1663011454840-48f5fffb737b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+                    break;
+                case 'Migraine':
+                case 'Epilepsy':
+                case 'Multiple Sclerosis':
+                    labResult = 'MRI';
+                    imageUrl = 'https://plus.unsplash.com/premium_photo-1661856238614-bfacddd4eae1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+                    break;
+                case 'Acne':
+                case 'Psoriasis':
+                case 'Eczema':
+                    labResult = 'Skin Scraping';
+                    imageUrl = 'https://plus.unsplash.com/premium_photo-1723568476206-3fa0341247df?q=80&w=2080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+                    break;
+                case 'Depression':
+                case 'Anxiety':
+                case 'Bipolar Disorder':
+                    labResult = 'Psychological Evaluation';
+                    imageUrl = 'https://images.unsplash.com/photo-1581056771107-24ca5f033842?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+                    break;
+                default:
+                    labResult = 'General Checkup';
+                    imageUrl = 'https://plus.unsplash.com/premium_photo-1661715352607-6da4f682730b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+            }
+
+            await pool.query(
+                'INSERT INTO lab_results (report_id, image_url) VALUES ($1, $2)',
+                [reportId, imageUrl]
+            );
+
         }
 
         console.log('Random data has been added successfully.');

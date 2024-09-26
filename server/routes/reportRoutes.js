@@ -2,15 +2,18 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../database');
 
-router.get('/', async(req, res) => {
-    const { patient_id } = req.query;
-
+router.get('/', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM medical_reports WHERE patient_id = $1', [patient_id]);
+        const result = await pool.query(`
+            SELECT DISTINCT mr.*, lr.image_url 
+            FROM medical_reports mr
+            LEFT JOIN lab_results lr ON mr.report_id = lr.report_id
+            ORDER BY mr.report_id ASC
+        `);
         res.json(result.rows);
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: 'Server error'});
+        res.status(500).json({ error: 'Server error' });
     }
 });
 

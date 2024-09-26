@@ -3,7 +3,7 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import Patients from '../components/Patients'
 import Doctors from '../components/Doctors'
-// import MedicalReports from '../components/MedicalReports'
+import MedicalReports from '../components/MedicalReports'
 import Profile from '../components/Profile'
 import logo from '../assets/logo.png'
 import '../styles/Patient.css'
@@ -11,7 +11,7 @@ import '../styles/Patient.css'
 function Admin() {
     const [patients, setPatients] = useState([])
     const [doctors, setDoctors] = useState([])
-    // const [reports, setReports] = useState([])
+    const [reports, setReports] = useState([])
     const [activeTab, setActiveTab] = useState('patients')
     const navigate = useNavigate()
     const adminId = localStorage.getItem('admin_id')
@@ -48,13 +48,13 @@ function Admin() {
                     console.error('Error fetching doctors:', error)
                 })
 
-            // axios.get(`/api/reports?admin_id=${adminId}`)
-            //     .then(reportsResponse => {
-            //         setReports(reportsResponse.data)
-            //     })
-            //     .catch(error => {
-            //         console.error('Error fetching medical reports:', error)
-            //     })
+            axios.get(`/api/reports`)
+                .then(reportsResponse => {
+                    setReports(reportsResponse.data)
+                })
+                .catch(error => {
+                    console.error('Error fetching medical reports:', error)
+                })
         }
     }, [adminId])
 
@@ -124,9 +124,9 @@ function Admin() {
                     {activeTab === 'doctors' && (
                         <Doctors doctors={doctors} setDoctors={setDoctors}/>
                     )}
-                    {/* {activeTab === 'reports' && (
-                        <MedicalReports reports={reports} />
-                    )} */}
+                    {activeTab === 'reports' && (
+                        <MedicalReports reports={reports} setReports={setReports} />
+                    )}
                     {activeTab === 'profile' && (
                         <Profile userRole={'admin'}/>
                     )}   
