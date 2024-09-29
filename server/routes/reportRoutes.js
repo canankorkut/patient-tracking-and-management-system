@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../database');
 
+// List reports
 router.get('/', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -17,6 +18,7 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Add report
 router.post('/', async (req, res) => {
     const { patient_id, doctor_id, report_date, report_content, admin_id, image_url } = req.body;
 
@@ -50,6 +52,7 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Update report
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { patient_id, doctor_id, report_date, report_content, admin_id, image_url } = req.body;
@@ -94,6 +97,28 @@ router.put('/:id', async (req, res) => {
         `, [id]);
 
         res.json(fullReport.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Delete report
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Delete record from lab_results table
+        await pool.query(`
+            DELETE FROM lab_results WHERE report_id = $1;
+        `, [id]);
+
+        // Delete record from medical_reports table
+        await pool.query(`
+            DELETE FROM medical_reports WHERE report_id = $1;
+        `, [id]);
+
+        res.json({ message: 'Rapor başarıyla silindi' });
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Server error' });
