@@ -10,10 +10,12 @@ function MedicalReports({reports, setReports}) {
     diagnosis: '',
     treatment: '',
     admin_id: localStorage.getItem('admin_id'),
-    image_url: ''
+    image_url: '',
   })
 
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [updateReport, setUpdateReport] = useState(null)
 
   const [currentPage, setCurrentPage] = useState(1)
   const [reportsPerPage] = useState(11)
@@ -88,6 +90,56 @@ function MedicalReports({reports, setReports}) {
   const handleChange = (e) => {
     const { name, value } = e.target
     setNewReport({ ...newReport, [name]: value })
+  }
+
+  const handleUpdateClick = (report) => {
+    setUpdateReport({
+      report_id: report.report_id,
+      patient_id: report.patient_id,
+      doctor_id: report.doctor_id,
+      report_date: report.report_date,
+      diagnosis: report.report_content.diagnosis,
+      treatment: report.report_content.treatment,
+      image_url: report.image_url
+  })
+    setShowUpdateModal(true)
+  }
+
+  const handleUpdateReport = () => {
+    console.log('Update Report Data:', updateReport)
+    if (!updateReport || !updateReport.report_id) {
+      console.error('Report ID is missing.')
+      return
+    }
+
+    const reportContent = {
+      diagnosis: updateReport.diagnosis,
+      treatment: updateReport.treatment
+    }
+
+    axios.put(`/api/reports/${updateReport.report_id}`, {
+      patient_id: updateReport.patient_id,
+      doctor_id: updateReport.doctor_id,
+      report_date: updateReport.report_date,
+      report_content: reportContent,
+      admin_id: localStorage.getItem('admin_id'),
+      image_url: updateReport.image_url
+    })
+      .then(response => {
+        setShowUpdateModal(false)
+        console.log('Updated Reports Data:', response.data)
+        setReports(prevReports => 
+          prevReports.map(report => (report.report_id === updateReport.report_id ? response.data : report))
+        )
+      })
+      .catch(error => {
+        console.error('Error updating report:', error)
+      })
+  }
+
+  const handleUpdateChange = (e) => {
+    const { name, value } = e.target
+    setUpdateReport(prev => ({ ...prev, [name]: value }))
   }
 
   return (
@@ -184,6 +236,93 @@ function MedicalReports({reports, setReports}) {
             </div>
         </div>
       )}
+
+      {showUpdateModal && updateReport && (
+        <div className='modal fade show d-block' role='dialog'>
+          <div className='modal-dialog'>
+            <div className='modal-content'>
+              <div className='modal-header d-flex justify-content-between'>
+                <h5 className='modal-title'>Update Report</h5>
+                <div className='close' onClick={() => setShowUpdateModal(false)} style={{ cursor: 'pointer' }}>
+                  <span className='fs-2'>&times;</span>
+                </div>
+              </div>
+              <div className='modal-body'>
+                <form>
+                  <div className='form-group mb-3 mt-2'>
+                    <label className='mb-1'>Patient ID</label>
+                    <input 
+                      type='number'
+                      className='form-control'
+                      name='patient_id'
+                      value={updateReport.patient_id}
+                      onChange={handleUpdateChange}
+                    />
+                  </div>
+                  <div className='form-group mb-3'>
+                    <label className='mb-1'>Doctor ID</label>
+                    <input 
+                      type='number'
+                      className='form-control'
+                      name='doctor_id'
+                      value={updateReport.doctor_id}
+                      onChange={handleUpdateChange}
+                    />
+                  </div>
+                  <div className='form-group mb-3'>
+                    <label className='mb-1'>Report Date</label>
+                    <input 
+                      type='date'
+                      className='form-control'
+                      name='report_date'
+                      value={updateReport.report_date}
+                      onChange={handleUpdateChange}
+                    />
+                  </div>
+                  <div className='form-group mb-3'>
+                    <label className='mb-1'>Diagnosis</label>
+                    <input 
+                      type='text'
+                      className='form-control'
+                      name='diagnosis'
+                      value={updateReport.diagnosis}
+                      onChange={handleUpdateChange}
+                    />
+                  </div>
+                  <div className='form-group mb-3'>
+                    <label className='mb-1'>Treatment</label>
+                    <input 
+                      type='text'
+                      className='form-control'
+                      name='treatment'
+                      value={updateReport.treatment}
+                      onChange={handleUpdateChange}
+                    />
+                  </div>
+                  <div className='form-group mb-3'>
+                    <label className='mb-1'>Lab Result Image URL</label>
+                    <input 
+                      type='text'
+                      className='form-control'
+                      name='image_url'
+                      value={updateReport.image_url}
+                      onChange={handleUpdateChange}
+                    />
+                  </div>
+                </form>
+              </div>
+              <div className='modal-footer'>
+                <button type='button' className='btn btn-secondary mb-2' onClick={() => setShowUpdateModal(false)}>
+                  Close
+                </button>
+                <button type='button' className='btn btn-primary' onClick={handleUpdateReport}>
+                  Update Report
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     
       <table className='table text-center'>
           <thead>
@@ -218,7 +357,7 @@ function MedicalReports({reports, setReports}) {
                       </td>
                       <td>
                         <div className='d-flex justify-content-center'>
-                        <button type='button' className='btn btn-outline-secondary me-2'>Update</button>
+                        <button type='button' className='btn btn-outline-secondary me-2' onClick={() => handleUpdateClick(report)}>Update</button>
                         <button type='button' className='btn btn-outline-danger'>Delete</button>
                         </div>
                       </td>

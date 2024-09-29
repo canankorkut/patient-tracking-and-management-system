@@ -149,7 +149,6 @@ function Appointments({ appointments, setAppointments, userRole }) {
   const handleUpdateClick = (appointment) => {
     console.log(appointment)
     setUpdateAppointment(appointment)
-    
     setShowUpdateModal(true)
   }
 
