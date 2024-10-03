@@ -39,9 +39,10 @@ router.post('/', async (req, res) => {
         }
 
         const fullReport = await pool.query(`
-            SELECT mr.*, lr.image_url 
+            SELECT mr.*, lr.image_url, p.first_name AS patient_first_name, p.last_name AS patient_last_name 
             FROM medical_reports mr
             LEFT JOIN lab_results lr ON mr.report_id = lr.report_id
+            INNER JOIN patients p ON mr.patient_id = p.patient_id
             WHERE mr.report_id = $1;
         `, [reportId]);
 
@@ -88,10 +89,11 @@ router.put('/:id', async (req, res) => {
             }
         }
 
-        // Tam güncellenmiş raporu döndür
+        // Return fully updated report
         const fullReport = await pool.query(`
-            SELECT mr.*, lr.image_url 
+            SELECT mr.*, lr.image_url, p.first_name AS patient_first_name, p.last_name AS patient_last_name 
             FROM medical_reports mr
+            INNER JOIN patients p ON mr.patient_id = p.patient_id
             LEFT JOIN lab_results lr ON mr.report_id = lr.report_id
             WHERE mr.report_id = $1;
         `, [id]);
@@ -118,7 +120,30 @@ router.delete('/:id', async (req, res) => {
             DELETE FROM medical_reports WHERE report_id = $1;
         `, [id]);
 
-        res.json({ message: 'Rapor başarıyla silindi' });
+        res.json({ message: 'Report deleted successfully' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Get doctor's reports
+router.get('/doctor-reports', async (req, res) => {
+    const { doctor_id } = req.query;
+
+    try {
+        const result = await pool.query(`
+            SELECT mr.*, lr.image_url, p.first_name AS patient_first_name, p.last_name AS patient_last_name 
+            FROM medical_reports mr
+            LEFT JOIN lab_results lr ON mr.report_id = lr.report_id
+            INNER JOIN patients p ON mr.patient_id = p.patient_id
+            WHERE mr.doctor_id = $1;
+        `, [doctor_id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'No report found.' });
+        }
+        res.json(result.rows);
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Server error' });

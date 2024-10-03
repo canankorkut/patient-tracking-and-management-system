@@ -125,7 +125,7 @@ function Admin() {
                         <Doctors doctors={doctors} setDoctors={setDoctors}/>
                     )}
                     {activeTab === 'reports' && (
-                        <MedicalReports reports={reports} setReports={setReports} />
+                        <MedicalReports reports={reports} setReports={setReports} userRole={'admin'}/>
                     )}
                     {activeTab === 'profile' && (
                         <Profile userRole={'admin'}/>

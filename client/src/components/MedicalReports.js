@@ -1,16 +1,16 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import PaginationComponent from './PaginationComponent'
 
-function MedicalReports({reports, setReports}) {
+function MedicalReports({reports, setReports, userRole}) {
   const [newReport, setNewReport] = useState({
     patient_id: '',
-    doctor_id: '',
+    doctor_id: userRole === 'doctor' ? localStorage.getItem('doctor_id') : '',
     report_date: '',
     diagnosis: '',
     treatment: '',
     admin_id: localStorage.getItem('admin_id'),
-    image_url: '',
+    image_url: ''
   })
 
   const [showAddModal, setShowAddModal] = useState(false)
@@ -70,7 +70,9 @@ function MedicalReports({reports, setReports}) {
       report_content: {
         diagnosis: newReport.diagnosis,
         treatment: newReport.treatment
-      }
+      },
+      patient_first_name: newReport.patient_first_name,
+      patient_last_name: newReport.patient_last_name
     }
 
     axios.post('/api/reports', reportData)
@@ -98,11 +100,13 @@ function MedicalReports({reports, setReports}) {
     setUpdateReport({
       report_id: report.report_id,
       patient_id: report.patient_id,
-      doctor_id: report.doctor_id,
+      doctor_id: userRole === 'doctor' ? localStorage.getItem('doctor_id') : report.doctor_id,
       report_date: report.report_date,
       diagnosis: report.report_content.diagnosis,
       treatment: report.report_content.treatment,
-      image_url: report.image_url
+      image_url: report.image_url,
+      patient_first_name: report.patient_first_name,
+      patient_last_name: report.patient_last_name
   })
     setShowUpdateModal(true)
   }
@@ -164,6 +168,22 @@ function MedicalReports({reports, setReports}) {
       })
   }
 
+  useEffect(() => {
+    if(userRole === 'doctor') {
+      const doctorId = localStorage.getItem('doctor_id');
+      if (doctorId) {
+        axios.get(`/api/reports/doctor-reports`, { params: { doctor_id: doctorId } })
+          .then(response => {
+            setReports(response.data)
+          })
+          .catch(error => {
+            console.error('Error fetching doctor reports:', error)
+          })
+      }
+    }
+  }, [])
+
+
   return (
     <div className='p-4'>
       <div className='d-inline-block mb-4'>
@@ -194,16 +214,18 @@ function MedicalReports({reports, setReports}) {
                         onChange={handleChange}
                       />
                     </div>
-                    <div className='form-group mb-3'>
-                      <label className='mb-1'>Doctor ID</label>
-                      <input 
-                        type='number'
-                        className='form-control'
-                        name='doctor_id'
-                        value={newReport.doctor_id}
-                        onChange={handleChange}
-                      />
-                    </div>
+                    { userRole === 'patient' || userRole === 'admin'&& (
+                      <div className='form-group mb-3'>
+                        <label className='mb-1'>Doctor ID</label>
+                        <input 
+                          type='number'
+                          className='form-control'
+                          name='doctor_id'
+                          value={newReport.doctor_id}
+                          onChange={handleChange}
+                        />
+                      </div>
+                    )}
                     <div className='form-group mb-3'>
                       <label className='mb-1'>Report Date</label>
                       <input 
@@ -281,16 +303,18 @@ function MedicalReports({reports, setReports}) {
                       onChange={handleUpdateChange}
                     />
                   </div>
-                  <div className='form-group mb-3'>
-                    <label className='mb-1'>Doctor ID</label>
-                    <input 
-                      type='number'
-                      className='form-control'
-                      name='doctor_id'
-                      value={updateReport.doctor_id}
-                      onChange={handleUpdateChange}
-                    />
-                  </div>
+                  { userRole === 'patient' || userRole === 'admin' && (
+                    <div className='form-group mb-3'>
+                      <label className='mb-1'>Doctor ID</label>
+                      <input 
+                        type='number'
+                        className='form-control'
+                        name='doctor_id'
+                        value={updateReport.doctor_id}
+                        onChange={handleUpdateChange}
+                      />
+                    </div>
+                  )}
                   <div className='form-group mb-3'>
                     <label className='mb-1'>Report Date</label>
                     <input 
@@ -377,7 +401,15 @@ function MedicalReports({reports, setReports}) {
               <tr>
                   <th>Report ID</th>
                   <th>Patient ID</th>
-                  <th>Doctor ID</th>
+                  {userRole === 'doctor' && (
+                    <>
+                    <th>Patient First Name</th>
+                    <th>Patient Last Name</th>
+                    </>
+                  )}
+                  {userRole === 'patient' || userRole === 'admin' && (
+                    <th>Doctor ID</th>
+                  )}
                   <th>Report Date</th>
                   <th>Diagnosis</th>
                   <th>Treatment</th>
@@ -390,7 +422,15 @@ function MedicalReports({reports, setReports}) {
                 <tr key={report.report_id}>
                       <td>{report.report_id}</td>
                       <td>{report.patient_id}</td>
-                      <td>{report.doctor_id}</td>
+                      {userRole === 'patient' || userRole === 'admin' && (
+                        <td>{report.doctor_id}</td>
+                      )}
+                      {userRole === 'doctor' && (
+                        <>
+                        <td>{report.patient_first_name}</td>
+                        <td>{report.patient_last_name}</td>
+                        </>
+                      )}
                       <td>{report.report_date}</td>
                       <td>{report.report_content.diagnosis}</td>
                       <td>{report.report_content.treatment}</td>

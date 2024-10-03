@@ -125,7 +125,7 @@ function Doctor() {
                         <Appointments appointments={appointments} setAppointments={setAppointments} userRole={'doctor'} />
                     )}
                     {activeTab === 'reports' && (
-                        <MedicalReports reports={reports}/>
+                        <MedicalReports reports={reports} setReports={setReports} userRole={'doctor'}/>
                     )}
                     {activeTab === 'profile' && (
                         <Profile userRole={'doctor'}/>
