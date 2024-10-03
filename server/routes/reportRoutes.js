@@ -39,10 +39,11 @@ router.post('/', async (req, res) => {
         }
 
         const fullReport = await pool.query(`
-            SELECT mr.*, lr.image_url, p.first_name AS patient_first_name, p.last_name AS patient_last_name 
+            SELECT mr.*, lr.image_url, p.first_name AS patient_first_name, p.last_name AS patient_last_name, d.first_name AS doctor_first_name, d.last_name AS doctor_last_name
             FROM medical_reports mr
             LEFT JOIN lab_results lr ON mr.report_id = lr.report_id
             INNER JOIN patients p ON mr.patient_id = p.patient_id
+            INNER JOIN doctors d ON mr.doctor_id = d.doctor_id
             WHERE mr.report_id = $1;
         `, [reportId]);
 
@@ -91,9 +92,10 @@ router.put('/:id', async (req, res) => {
 
         // Return fully updated report
         const fullReport = await pool.query(`
-            SELECT mr.*, lr.image_url, p.first_name AS patient_first_name, p.last_name AS patient_last_name 
+            SELECT mr.*, lr.image_url, p.first_name AS patient_first_name, p.last_name AS patient_last_name, d.first_name AS doctor_first_name, d.last_name AS doctor_last_name  
             FROM medical_reports mr
             INNER JOIN patients p ON mr.patient_id = p.patient_id
+            INNER JOIN doctors d ON mr.doctor_id = d.doctor_id
             LEFT JOIN lab_results lr ON mr.report_id = lr.report_id
             WHERE mr.report_id = $1;
         `, [id]);
@@ -139,6 +141,29 @@ router.get('/doctor-reports', async (req, res) => {
             INNER JOIN patients p ON mr.patient_id = p.patient_id
             WHERE mr.doctor_id = $1;
         `, [doctor_id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'No report found.' });
+        }
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Get patient's reports
+router.get('/patient-reports', async (req, res) => {
+    const { patient_id } = req.query;
+
+    try {
+        const result = await pool.query(`
+            SELECT mr.*, lr.image_url, d.first_name AS doctor_first_name, d.last_name AS doctor_last_name 
+            FROM medical_reports mr
+            LEFT JOIN lab_results lr ON mr.report_id = lr.report_id
+            INNER JOIN doctors d ON mr.doctor_id = d.doctor_id
+            WHERE mr.patient_id = $1;
+        `, [patient_id]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'No report found.' });

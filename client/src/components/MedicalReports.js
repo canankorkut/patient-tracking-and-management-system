@@ -4,7 +4,7 @@ import PaginationComponent from './PaginationComponent'
 
 function MedicalReports({reports, setReports, userRole}) {
   const [newReport, setNewReport] = useState({
-    patient_id: '',
+    patient_id: userRole === 'patient' ? localStorage.getItem('patient_id') : '',
     doctor_id: userRole === 'doctor' ? localStorage.getItem('doctor_id') : '',
     report_date: '',
     diagnosis: '',
@@ -70,9 +70,7 @@ function MedicalReports({reports, setReports, userRole}) {
       report_content: {
         diagnosis: newReport.diagnosis,
         treatment: newReport.treatment
-      },
-      patient_first_name: newReport.patient_first_name,
-      patient_last_name: newReport.patient_last_name
+      }
     }
 
     axios.post('/api/reports', reportData)
@@ -104,9 +102,7 @@ function MedicalReports({reports, setReports, userRole}) {
       report_date: report.report_date,
       diagnosis: report.report_content.diagnosis,
       treatment: report.report_content.treatment,
-      image_url: report.image_url,
-      patient_first_name: report.patient_first_name,
-      patient_last_name: report.patient_last_name
+      image_url: report.image_url
   })
     setShowUpdateModal(true)
   }
@@ -183,6 +179,21 @@ function MedicalReports({reports, setReports, userRole}) {
     }
   }, [])
 
+  useEffect(() => {
+      if(userRole === 'patient') {
+        const patientId = localStorage.getItem('patient_id');
+        if (patientId) {
+          axios.get(`/api/reports/patient-reports`, { params: { patient_id: patientId } })
+            .then(response => {
+              setReports(response.data)
+            })
+            .catch(error => {
+              console.error('Error fetching patient reports:', error)
+            })
+        }
+      }
+    }, [])
+
 
   return (
     <div className='p-4'>
@@ -203,18 +214,20 @@ function MedicalReports({reports, setReports, userRole}) {
                   </div> 
                 </div>
                 <div className='modal-body'>
-                  <form>                     
-                    <div className='form-group mt-2 mb-3'>
-                      <label className='mb-1'>Patient ID</label>
-                      <input 
-                        type='number'
-                        className='form-control'
-                        name='patient_id'
-                        value={newReport.patient_id}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    { userRole === 'patient' || userRole === 'admin'&& (
+                  <form>   
+                    {userRole !== 'patient' && (
+                      <div className='form-group mt-2 mb-3'>
+                        <label className='mb-1'>Patient ID</label>
+                        <input 
+                          type='number'
+                          className='form-control'
+                          name='patient_id'
+                          value={newReport.patient_id}
+                          onChange={handleChange}
+                        />
+                      </div>
+                    )}                  
+                    { userRole !== 'doctor' && (
                       <div className='form-group mb-3'>
                         <label className='mb-1'>Doctor ID</label>
                         <input 
@@ -293,17 +306,19 @@ function MedicalReports({reports, setReports, userRole}) {
               </div>
               <div className='modal-body'>
                 <form>
-                  <div className='form-group mb-3 mt-2'>
-                    <label className='mb-1'>Patient ID</label>
-                    <input 
-                      type='number'
-                      className='form-control'
-                      name='patient_id'
-                      value={updateReport.patient_id}
-                      onChange={handleUpdateChange}
-                    />
-                  </div>
-                  { userRole === 'patient' || userRole === 'admin' && (
+                  {userRole !== 'patient' && (
+                    <div className='form-group mb-3 mt-2'>
+                      <label className='mb-1'>Patient ID</label>
+                      <input 
+                        type='number'
+                        className='form-control'
+                        name='patient_id'
+                        value={updateReport.patient_id}
+                        onChange={handleUpdateChange}
+                      />
+                    </div>
+                  )}
+                  { userRole !== 'doctor' && (
                     <div className='form-group mb-3'>
                       <label className='mb-1'>Doctor ID</label>
                       <input 
@@ -400,15 +415,23 @@ function MedicalReports({reports, setReports, userRole}) {
           <thead>
               <tr>
                   <th>Report ID</th>
-                  <th>Patient ID</th>
+                  {userRole !== 'patient' && (
+                    <th>Patient ID</th>
+                  )}
                   {userRole === 'doctor' && (
                     <>
                     <th>Patient First Name</th>
                     <th>Patient Last Name</th>
                     </>
                   )}
-                  {userRole === 'patient' || userRole === 'admin' && (
+                  {userRole !== 'doctor' && (
                     <th>Doctor ID</th>
+                  )}
+                  {userRole === 'patient' && (
+                    <>
+                    <th>Doctor First Name</th>
+                    <th>Doctor Last Name</th>
+                    </>
                   )}
                   <th>Report Date</th>
                   <th>Diagnosis</th>
@@ -421,14 +444,22 @@ function MedicalReports({reports, setReports, userRole}) {
               {currentReports.map(report =>  (
                 <tr key={report.report_id}>
                       <td>{report.report_id}</td>
-                      <td>{report.patient_id}</td>
-                      {userRole === 'patient' || userRole === 'admin' && (
-                        <td>{report.doctor_id}</td>
+                      {userRole !== 'patient' && (
+                        <td>{report.patient_id}</td>
                       )}
                       {userRole === 'doctor' && (
                         <>
                         <td>{report.patient_first_name}</td>
                         <td>{report.patient_last_name}</td>
+                        </>
+                      )}
+                      {userRole !== 'doctor' && (
+                        <td>{report.doctor_id}</td>
+                      )}
+                      {userRole === 'patient' && (
+                        <>
+                        <td>{report.doctor_first_name}</td>
+                        <td>{report.doctor_last_name}</td>
                         </>
                       )}
                       <td>{report.report_date}</td>
