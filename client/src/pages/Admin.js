@@ -5,6 +5,7 @@ import Patients from '../components/Patients'
 import Doctors from '../components/Doctors'
 import MedicalReports from '../components/MedicalReports'
 import Profile from '../components/Profile'
+import Notifications from '../components/Notifications'
 import logo from '../assets/logo.png'
 import '../styles/Patient.css'
 
@@ -12,6 +13,7 @@ function Admin() {
     const [patients, setPatients] = useState([])
     const [doctors, setDoctors] = useState([])
     const [reports, setReports] = useState([])
+    const [notifications, setNotifications] = useState([])
     const [activeTab, setActiveTab] = useState('patients')
     const navigate = useNavigate()
     const adminId = localStorage.getItem('admin_id')
@@ -54,6 +56,14 @@ function Admin() {
                 })
                 .catch(error => {
                     console.error('Error fetching medical reports:', error)
+                })
+            
+            axios.get(`/api/notifications?user_id=${adminId}`)
+                .then(notificationsResponse => {
+                    setNotifications(notificationsResponse.data)
+                })
+                .catch(error => {
+                    console.error('Error fetching notifications:', error)
                 })
         }
     }, [adminId])
@@ -109,8 +119,11 @@ function Admin() {
 
                 <main className='col-md-9 col-lg-10 bg-light p-4'>
                     <div className='d-flex justify-content-end mb-3 me-4'>
-                        <div className='notification me-4'>
-                            <i className='fa-regular fa-bell'></i>
+                        <div className="notification me-4" data-bs-toggle="modal" data-bs-target="#notificationModal">
+                            <i className="fa-regular fa-bell fa-lg"></i>
+                            {notifications.filter(notification => !notification.read).length > 0 && (
+                                <span className="badge bg-danger">{notifications.filter(notification => !notification.read).length}</span>
+                            )}
                         </div>
                         <div className='profile'>
                             <i className='fa-regular fa-user me-2'></i>
@@ -130,8 +143,9 @@ function Admin() {
                     {activeTab === 'profile' && (
                         <Profile userRole={'admin'}/>
                     )}   
-
                 </main>
+
+                <Notifications notifications={notifications} setNotifications={setNotifications} />
             </div>
         </div>
   )

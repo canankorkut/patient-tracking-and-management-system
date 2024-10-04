@@ -2,6 +2,28 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../database');
 
+const sendReportNotification = async (reportId, patientId, doctorId, adminId) => {
+    const messageToUser= `New lab results have been uploaded: ${reportId}`;
+
+    // Send notification to patient
+    await pool.query(
+        'INSERT INTO notifications (user_id, message) VALUES ($1, $2)',
+        [patientId, messageToUser]
+    );
+
+    // Send notification to doctor
+    await pool.query(
+        'INSERT INTO notifications (user_id, message) VALUES ($1, $2)',
+        [doctorId, messageToUser]
+    );
+
+    // Send notification to admin
+    await pool.query(
+        'INSERT INTO notifications (user_id, message) VALUES ($1, $2)',
+        [adminId, messageToUser]
+    );
+};
+
 // List reports
 router.get('/', async (req, res) => {
     try {
@@ -37,6 +59,8 @@ router.post('/', async (req, res) => {
                 VALUES ($1, $2);
             `, [reportId, image_url]);
         }
+
+        await sendReportNotification(reportId, patient_id, doctor_id, admin_id);
 
         const fullReport = await pool.query(`
             SELECT mr.*, lr.image_url, p.first_name AS patient_first_name, p.last_name AS patient_last_name, d.first_name AS doctor_first_name, d.last_name AS doctor_last_name
@@ -89,6 +113,8 @@ router.put('/:id', async (req, res) => {
                 `, [id, image_url]);
             }
         }
+
+        await sendReportNotification(id, patient_id, doctor_id, admin_id);
 
         // Return fully updated report
         const fullReport = await pool.query(`

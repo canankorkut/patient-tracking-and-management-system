@@ -1,7 +1,3 @@
---DROP TABLE IF EXISTS lab_results;
---DROP TABLE IF EXISTS medical_reports;
---DELETE FROM medical_reports;
-
 CREATE TABLE IF NOT EXISTS users (
     user_id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -57,4 +53,12 @@ CREATE TABLE IF NOT EXISTS lab_results (
     result_id SERIAL PRIMARY KEY,
     report_id INT NOT NULL REFERENCES medical_reports(report_id) ON DELETE CASCADE,
     image_url TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+    notification_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
