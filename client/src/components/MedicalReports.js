@@ -30,22 +30,6 @@ function MedicalReports({reports, setReports, userRole}) {
 
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber)
 
-  const downloadImage = (url) => {
-    fetch(url)
-        .then(response => response.blob())
-        .then(blob => {
-            const url = window.URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.style.display = 'none'
-            a.href = url
-            a.download = 'lab_result.png'
-            document.body.appendChild(a)
-            a.click()
-            window.URL.revokeObjectURL(url)
-        })
-        .catch(err => console.error('Download failed:', err))
-  }
-
   const handleAddReport = () => {
     if (
       !newReport.patient_id ||
@@ -94,6 +78,23 @@ function MedicalReports({reports, setReports, userRole}) {
     setNewReport({ ...newReport, [name]: value })
   }
 
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0]
+    const formData = new FormData()
+    formData.append('image', file)
+    try {
+      const response = await axios.post('/api/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log('Image url:', response.data.url)
+      setNewReport((prevNewReport) => ({ ...prevNewReport, image_url: response.data.url }))
+    } catch (error) {
+      console.error('Error uploading image:', error)
+    }
+  }
+
   const handleUpdateClick = (report) => {
     setUpdateReport({
       report_id: report.report_id,
@@ -109,11 +110,19 @@ function MedicalReports({reports, setReports, userRole}) {
 
   const handleUpdateReport = () => {
     console.log('Update Report Data:', updateReport)
-    if (!updateReport || !updateReport.report_id) {
-      console.error('Report ID is missing.')
+    if (
+      !updateReport.patient_id ||
+      !updateReport.doctor_id ||
+      !updateReport.report_date ||
+      !updateReport.diagnosis ||
+      !updateReport.treatment ||
+      !updateReport.image_url
+    ) 
+    if (updateReport.image_url !== newReport.image_url) {
+      alert("Please fill in all fields.")
       return
     }
-
+    
     const reportContent = {
       diagnosis: updateReport.diagnosis,
       treatment: updateReport.treatment
@@ -144,6 +153,23 @@ function MedicalReports({reports, setReports, userRole}) {
     setUpdateReport(prev => ({ ...prev, [name]: value }))
   }
 
+  const handleImageUploadForUpdate = async (event) => {
+    const file = event.target.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+    try {
+      const response = await axios.post('/api/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log('Updated image URL:', response.data.url);
+      setUpdateReport((prevUpdateReport) => ({ ...prevUpdateReport, image_url: response.data.url }));
+    } catch (error) {
+      console.error('Error uploading updated image:', error);
+    }
+  };
+
   const handleDeleteClick = (reportId) => {
     console.log("Report id:", reportId)
     setReportToDelete(reportId)
@@ -162,6 +188,22 @@ function MedicalReports({reports, setReports, userRole}) {
       .catch(error => {
         console.error('Error deleting report:', error)
       })
+  }
+
+  const downloadImage = (url) => {
+    fetch(url)
+      .then(response => response.blob())
+      .then(blob => {
+          const url = window.URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.style.display = 'none'
+          a.href = url
+          a.download = 'lab_result'
+          document.body.appendChild(a)
+          a.click()
+          window.URL.revokeObjectURL(url)
+      })
+      .catch(err => console.error('Download failed:', err))
   }
 
   useEffect(() => {
@@ -272,11 +314,10 @@ function MedicalReports({reports, setReports, userRole}) {
                     <div className='form-group mb-3'>
                       <label className='mb-1'>Lab Result Image URL</label>
                       <input 
-                        type='text'
+                        type='file'
                         className='form-control'
                         name='image_url'
-                        value={newReport.image_url}
-                        onChange={handleChange}
+                        onChange={handleImageUpload}
                       />
                     </div>
                   </form>
@@ -361,13 +402,12 @@ function MedicalReports({reports, setReports, userRole}) {
                     />
                   </div>
                   <div className='form-group mb-3'>
-                    <label className='mb-1'>Lab Result Image URL</label>
+                    <label className='mb-1'>Lab Result Image</label>
                     <input 
-                      type='text'
+                      type='file'
                       className='form-control'
                       name='image_url'
-                      value={updateReport.image_url}
-                      onChange={handleUpdateChange}
+                      onChange={handleImageUploadForUpdate}
                     />
                   </div>
                 </form>

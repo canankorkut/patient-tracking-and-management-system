@@ -14,6 +14,7 @@ function Admin() {
     const [doctors, setDoctors] = useState([])
     const [reports, setReports] = useState([])
     const [notifications, setNotifications] = useState([])
+    const [adminName, setAdminName] = useState('')
     const [activeTab, setActiveTab] = useState('patients')
     const navigate = useNavigate()
     const adminId = localStorage.getItem('admin_id')
@@ -24,7 +25,9 @@ function Admin() {
         if(token) {
             axios.get('/api/users/user', {headers: { Authorization: `Bearer ${token}`}})
                 .then(response => {
-                    console.log(response.data);
+                    console.log(response.data)
+                    const { first_name, last_name } = response.data.roleDetails
+                    setAdminName(`${first_name} ${last_name}`)
                 })
                 .catch(error => {
                     console.error('Error fetching user information:', error)
@@ -127,7 +130,7 @@ function Admin() {
                         </div>
                         <div className='profile'>
                             <i className='fa-regular fa-user me-2'></i>
-                            Admin
+                            {adminName}
                         </div>
                     </div>
 

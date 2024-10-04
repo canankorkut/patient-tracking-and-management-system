@@ -14,6 +14,7 @@ function Doctor() {
     const [reports, setReports] = useState([])
     const [activeTab, setActiveTab] = useState('patients')
     const [notifications, setNotifications] = useState([])
+    const [doctorName, setDoctorName] = useState('')
     const navigate = useNavigate()
     const doctorId = localStorage.getItem('doctor_id')
     const [appointments, setAppointments] = useState([])
@@ -25,6 +26,8 @@ function Doctor() {
             axios.get('/api/users/user', {headers: { Authorization: `Bearer ${token}`}})
                 .then(response => {
                     console.log(response.data)
+                    const { first_name, last_name } = response.data.roleDetails
+                    setDoctorName(`${first_name} ${last_name}`)
                 })
                 .catch(error => {
                     console.error('Error fetching user information:', error)
@@ -127,7 +130,7 @@ function Doctor() {
                         </div>
                         <div className='profile'>
                             <i className='fa-regular fa-user me-2'></i>
-                            Doctor
+                            {doctorName}
                         </div>
                     </div>
 

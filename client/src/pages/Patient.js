@@ -13,6 +13,7 @@ function Patient() {
     const [reports, setReports] = useState([])
     const [notifications, setNotifications] = useState([])
     const [activeTab, setActiveTab] = useState('appointments')
+    const [patientName, setPatientName] = useState('')
     const navigate = useNavigate()
     const patientId = localStorage.getItem('patient_id')
 
@@ -22,7 +23,9 @@ function Patient() {
         if(token) {
             axios.get('/api/users/user', {headers: { Authorization: `Bearer ${token}`}})
                 .then(response => {
-                    console.log(response.data);
+                    console.log(response.data)
+                    const { first_name, last_name } = response.data.roleDetails
+                    setPatientName(`${first_name} ${last_name}`)
                 })
                 .catch(error => {
                     console.error('Error fetching user information:', error)
@@ -110,7 +113,7 @@ function Patient() {
                         </div>
                         <div className='profile'>
                             <i className='fa-regular fa-user me-2'></i>
-                            Patient
+                            {patientName}
                         </div>
                     </div>
 
