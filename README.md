@@ -50,11 +50,11 @@ This project is a web application where patients, doctors and admin users will t
   cd server
   npm install
   ```
-4. Create a database in PostgreSQL:
+3. Create a database in PostgreSQL:
   ```bash
   CREATE DATABASE patient_managment;
   ```
-5. Add your database connection details to the `.env` file:
+4. Add your database connection details to the `.env` file:
   ```bash
   DB_USER=your_database_user
   DB_HOST=your_database_host
@@ -64,12 +64,12 @@ This project is a web application where patients, doctors and admin users will t
 
   JWT_SECRET=your_jwt_secret_key
   ```
-7. Navigate to the client directory and install the dependencies:
+5. Navigate to the client directory and install the dependencies:
 ```bash
   cd client
   npm install
 ```
-9. Start both the frontend and backend:
+6. Start both the frontend and backend:
   ```bash
   # For the server
   cd server
